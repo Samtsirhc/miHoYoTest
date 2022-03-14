@@ -3,10 +3,45 @@ guid: 117bfaf09b6b6324682f75fac9d1d5f3
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pasted__pasted__pasted__pasted__Skin1
+    second: {fileID: 2100000, guid: 8d7ee232cdbcfb546ab3ef1298b93fe2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pasted__pasted__pasted__pasted__lambert2
+    second: {fileID: 2100000, guid: 899ec99c56bebe147be83470edc70935, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pasted__pasted__pasted__pasted__pasted__Mat_Kiana_C5_FACE
+    second: {fileID: 2100000, guid: 5f3750ce66cc7174e895144d9c40ad54, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pasted__pasted__pasted__pasted__pasted__lambert3
+    second: {fileID: 2100000, guid: 45c9141b0bb103d4a8d58e23a0f3b81c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pasted__pasted__pasted__pasted__pasted__lambert4
+    second: {fileID: 2100000, guid: ff23259c1cccc2b48a097a20607ae509, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pasted__pasted__pasted__pasted__pasted__pasted__pasted__pasted__Skin1
+    second: {fileID: 2100000, guid: 26e7cc1acbd8a884f8a7dff4c777ada6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pasted__pasted__pasted__pasted__pasted__pasted__pasted__pasted__cgfxShader3
+    second: {fileID: 2100000, guid: 975553e2cc125724eab721a2740e9882, type: 2}
   materials:
     materialImportMode: 2
-    materialName: 1
+    materialName: 2
     materialSearch: 1
     materialLocation: 1
   animations:
