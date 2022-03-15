@@ -5,14 +5,21 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed;
+    public float preinputTime;
+
     [SerializeField]
     private Vector3 moveDirection;
+    private bool attackPressed;
+    private float attackPreTime;
+    private int combo;
 
     private Rigidbody rb;
     private Animator animator;
 
 
     private int move_speed_id = Animator.StringToHash("moveSpeed");
+    private int attack_id = Animator.StringToHash("attack");
+    private int combo_id = Animator.StringToHash("combo");
 
 
 
@@ -32,8 +39,32 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         Movement();
+        Attack();
     }
 
+    void Attack()
+    {
+   
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            attackPressed = true;
+            combo = 1;
+            attackPreTime = 0;
+        }
+        if (attackPreTime > preinputTime)
+        {
+            attackPressed = false;
+            attackPreTime = 0;
+        }
+        attackPreTime += Time.deltaTime;
+        animator.SetBool(attack_id, attackPressed);
+        animator.SetInteger(combo_id, combo);
+    }
+
+    void ComboFinished()
+    {
+        combo = 0;
+    }
 
 
     void Movement()
