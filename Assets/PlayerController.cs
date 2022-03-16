@@ -9,9 +9,16 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private Vector3 moveDirection;
+    [SerializeField]
     private bool attackPressed;
+    [SerializeField]
     private float attackPreTime;
+    [SerializeField]
     private int combo;
+    [SerializeField]
+    private int attackType;
+    [SerializeField]
+    private bool canAttack = true;
 
     private Rigidbody rb;
     private Animator animator;
@@ -20,6 +27,7 @@ public class PlayerController : MonoBehaviour
     private int move_speed_id = Animator.StringToHash("moveSpeed");
     private int attack_id = Animator.StringToHash("attack");
     private int combo_id = Animator.StringToHash("combo");
+    private int attack_type_id = Animator.StringToHash("attack_type");
 
 
 
@@ -42,13 +50,17 @@ public class PlayerController : MonoBehaviour
         Attack();
     }
 
+    void AnimStatusCheck()
+    {
+
+    }
+
     void Attack()
     {
    
         if (Input.GetKeyDown(KeyCode.J))
         {
             attackPressed = true;
-            combo = 1;
             attackPreTime = 0;
         }
         if (attackPreTime > preinputTime)
@@ -56,14 +68,35 @@ public class PlayerController : MonoBehaviour
             attackPressed = false;
             attackPreTime = 0;
         }
-        attackPreTime += Time.deltaTime;
-        animator.SetBool(attack_id, attackPressed);
-        animator.SetInteger(combo_id, combo);
+        if (attackPressed)
+        {
+            attackPreTime += Time.deltaTime;
+            if (canAttack)
+            {
+                combo += 1;
+                attackType = 1;
+                animator.SetBool(attack_id, true);
+                animator.SetInteger(combo_id, combo);
+                animator.SetInteger(attack_type_id, attackType);
+                attackPressed = false;
+                canAttack = false;
+            }
+        }
+
     }
 
     void ComboFinished()
     {
         combo = 0;
+        attackType = 0;
+        animator.SetBool(attack_id, false);
+        animator.SetInteger(combo_id, combo);
+        animator.SetInteger(attack_type_id, attackType);
+    }
+
+    void CanAttack()
+    {
+        canAttack = true;
     }
 
 
