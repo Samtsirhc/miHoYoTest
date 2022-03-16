@@ -10,8 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private Vector3 moveDirection;
     private bool attackPressed;
-    private float preinputTimer;
-    private ActionType preinputAction;
+    private float attackPreTime;
     private int combo;
 
     private Rigidbody rb;
@@ -43,24 +42,21 @@ public class PlayerController : MonoBehaviour
         Attack();
     }
 
-    void Preinput()
-    {
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            preinputAction = ActionType.ATTACK;
-            preinputTimer = 0;
-        }
-        if (preinputTimer > preinputTime)
-        {
-            preinputAction = ActionType.NOTHING;
-            preinputTimer = 0;
-        }
-        preinputTimer += Time.deltaTime;
-
-    }
-
     void Attack()
     {
+   
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            attackPressed = true;
+            combo = 1;
+            attackPreTime = 0;
+        }
+        if (attackPreTime > preinputTime)
+        {
+            attackPressed = false;
+            attackPreTime = 0;
+        }
+        attackPreTime += Time.deltaTime;
         animator.SetBool(attack_id, attackPressed);
         animator.SetInteger(combo_id, combo);
     }
