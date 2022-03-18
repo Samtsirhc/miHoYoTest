@@ -12,7 +12,11 @@ public class PlayerController : MonoBehaviour
     private float attackPreTime;
     private int combo;
     private int attackType = 1;
+
+    #region 状态控制开关
+    private bool canMove = true;
     private bool canAttack = true;
+    #endregion
 
     #region 组件
     private Rigidbody rb;
@@ -69,7 +73,7 @@ public class PlayerController : MonoBehaviour
                 attackPressed = false;
                 attackPreTime = 0;
                 canAttack = false;
-
+                canMove = false;
             }
         }
         if (Input.GetKeyDown(KeyCode.J))
@@ -111,6 +115,7 @@ public class PlayerController : MonoBehaviour
         if (!animator.IsInTransition(0))
         {
             canAttack = true;
+            canMove = true;
         }
         else
         {
@@ -124,6 +129,7 @@ public class PlayerController : MonoBehaviour
         if (!animator.IsInTransition(0))
         {
             canAttack = true;
+            canMove = true;
         }
         else
         {
@@ -133,6 +139,10 @@ public class PlayerController : MonoBehaviour
 
     void Movement()
     {
+        if (animator.GetBool(attack_id))
+        {
+            return;
+        }
         moveDirection = Vector3.zero;
         if (Input.GetKey(KeyCode.W))
         {
