@@ -6,12 +6,17 @@ public class PlayerController : MonoBehaviour
 {
     public float moveSpeed;
     public float preinputTime;
+    public GameObject myCamera;
 
     private Vector3 moveDirection;
+    private float cameraY;
+
+    #region 攻击参数
     private bool attackPressed;
     private float attackPreTime;
     private int combo;
     private int attackType = 1;
+    #endregion
 
     #region 状态控制开关
     private bool canMove = true;
@@ -43,13 +48,13 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        cameraY = myCamera.transform.position.y;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Movement();
+        Movement2();
         Attack();
     }
 
@@ -66,6 +71,7 @@ public class PlayerController : MonoBehaviour
             if (canAttack  && !animator.IsInTransition(0))
             {
                 Debug.Log("应用攻击！" + combo);
+                transform.forward = moveDirection;
                 combo += 1;
                 animator.SetBool(attack_id, true);
                 animator.SetInteger(combo_id, combo);
@@ -137,13 +143,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    #region 移动和摄像机
     void Movement()
     {
         if (animator.GetBool(attack_id))
         {
             return;
         }
-        moveDirection = Vector3.zero;
+        if (IsMovePressed())
+        {
+            moveDirection = Vector3.zero;
+        }
         if (Input.GetKey(KeyCode.W))
         {
             moveDirection += new Vector3(-1, 0, 0);
@@ -160,7 +170,7 @@ public class PlayerController : MonoBehaviour
         {
             moveDirection += new Vector3(0, 0, 1);
         }
-        if (moveDirection.magnitude > 0.1)
+        if (IsMovePressed())
         {
             animator.SetFloat(move_speed_id, moveSpeed);
             transform.forward = moveDirection;
@@ -171,4 +181,70 @@ public class PlayerController : MonoBehaviour
             animator.SetFloat(move_speed_id, 0);
         }
     }
+    void Movement2()
+    {
+        if (animator.GetBool(attack_id))
+        {
+            return;
+        }
+        if (IsMovePressed())
+        {
+            moveDirection = Vector3.zero;
+        }
+        if (Input.GetKey(KeyCode.W))
+        {
+            moveDirection = GetCameraDirection();
+        }
+        else if (Input.GetKey(KeyCode.S))
+        {
+            moveDirection = -GetCameraDirection(); ;
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            moveDirection += Vector3.Cross(GetCameraDirection(), new Vector3(0, 1, 0));
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            moveDirection += Vector3.Cross(GetCameraDirection(), new Vector3(0, -1, 0));
+        }
+        if (IsMovePressed())
+        {
+            animator.SetFloat(move_speed_id, moveSpeed);
+            transform.forward = moveDirection.normalized;
+            characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+        }
+        else
+        {
+            animator.SetFloat(move_speed_id, 0);
+        }
+    }
+
+    bool IsMovePressed()
+    {
+        if (Input.GetKey(KeyCode.W))
+        {
+            return true;
+        }
+        else if (Input.GetKey(KeyCode.S))
+        {
+            return true;
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            return true;
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            return true;
+        }
+        return false;
+    }
+    Vector3 GetCameraDirection()
+    {
+        Vector3 _directon;
+        _directon = transform.position - myCamera.transform.position;
+        _directon.y = 0;
+        return _directon.normalized;
+    }
+    #endregion
 }
