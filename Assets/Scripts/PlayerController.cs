@@ -10,13 +10,16 @@ public class PlayerController : MonoBehaviour
     public GameObject myCamera;
 
     public Vector3 moveDirection;
+    public float attackHoldTime;
     private float cameraY;
+
 
     #region 攻击参数
     private bool attackPressed;
     private float attackPreTime;
     private int combo;
     private int attackType = 1;
+    private float attackHoldTimer;
     #endregion
 
     #region 状态控制开关
@@ -60,6 +63,14 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
+        if (Input.GetKey(KeyCode.J))
+        {
+            attackHoldTimer += Time.deltaTime;
+        }
+        if (Input.GetKeyUp(KeyCode.J))
+        {
+            attackHoldTimer = 0;
+        }
         if (attackPressed)
         {
             attackPreTime += Time.deltaTime;
@@ -71,7 +82,15 @@ public class PlayerController : MonoBehaviour
                     transform.forward = moveDirection;
                     //Debug.Log("转向了！" + moveDirection);
                 }
-                combo += 1;
+                if (attackHoldTimer > attackHoldTime)
+                {
+                    combo += 1;
+                    attackType = 2;
+                }
+                else
+                {
+                    combo += 1;
+                }
                 animator.SetBool(attack_id, true);
                 animator.SetInteger(combo_id, combo);
                 animator.SetInteger(attack_type_id, attackType);
