@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed;
+    public float turnSpeed;
     public float preinputTime;
     public GameObject myCamera;
 
@@ -57,20 +58,19 @@ public class PlayerController : MonoBehaviour
         Attack();
     }
 
-    void AnimStatusCheck()
-    {
-
-    }
-
     void Attack()
     {
         if (attackPressed)
         {
             attackPreTime += Time.deltaTime;
-            if (canAttack  && !animator.IsInTransition(0))
+            if (canAttack)
             {
                 Debug.Log("应用攻击！" + combo);
-                transform.forward = moveDirection;
+                if (IsMovePressed())
+                {
+                    transform.forward = moveDirection;
+                    //Debug.Log("转向了！" + moveDirection);
+                }
                 combo += 1;
                 animator.SetBool(attack_id, true);
                 animator.SetInteger(combo_id, combo);
@@ -113,36 +113,22 @@ public class PlayerController : MonoBehaviour
         animator.SetInteger(attack_type_id, attackType);
         CanAttack();
         Attack();
+        canMove = true;
     }
 
     void CanAttack()
     {
-        if (!animator.IsInTransition(0))
-        {
-            canAttack = true;
-            canMove = true;
-        }
-        else
-        {
-            StartCoroutine(CanAttackCheck());
-        }
+        canAttack = true;
     }
 
-    IEnumerator CanAttackCheck()
-    {
-        yield return new WaitForFixedUpdate();
-        if (!animator.IsInTransition(0))
-        {
-            canAttack = true;
-            canMove = true;
-        }
-        else
-        {
-            StartCoroutine(CanAttackCheck());
-        }
-    }
 
     #region 移动和摄像机
+
+    void TrunSmooth(Vector3 target) 
+    {
+        transform.forward += (target - transform.forward) * turnSpeed * Time.deltaTime;
+    }
+
     void Movement()
     {
         if (animator.GetBool(attack_id))
@@ -182,10 +168,6 @@ public class PlayerController : MonoBehaviour
     }
     void Movement2()
     {
-        if (animator.GetBool(attack_id))
-        {
-            return;
-        }
         if (IsMovePressed())
         {
             moveDirection = Vector3.zero;
@@ -206,10 +188,19 @@ public class PlayerController : MonoBehaviour
         {
             moveDirection += Vector3.Cross(GetCameraDirection(), new Vector3(0, -1, 0));
         }
+        if (animator.GetBool(attack_id))
+        {
+            return;
+        }
         if (IsMovePressed())
         {
             animator.SetFloat(move_speed_id, moveSpeed);
-            transform.forward = moveDirection.normalized;
+            if (canMove)
+            {
+                //Debug.Log("转向了！"+ moveDirection);
+                TrunSmooth(moveDirection.normalized);
+                //transform.forward = moveDirection.normalized;
+            }
             characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
         }
         else
@@ -220,19 +211,7 @@ public class PlayerController : MonoBehaviour
 
     bool IsMovePressed()
     {
-        if (Input.GetKey(KeyCode.W))
-        {
-            return true;
-        }
-        else if (Input.GetKey(KeyCode.S))
-        {
-            return true;
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            return true;
-        }
-        else if (Input.GetKey(KeyCode.D))
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A))
         {
             return true;
         }
