@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     public float preinputTime;
     public GameObject myCamera;
 
-    private Vector3 moveDirection;
+    public Vector3 moveDirection;
     private float cameraY;
 
     #region ¹¥»÷²ÎÊý
@@ -48,7 +48,6 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        cameraY = myCamera.transform.position.y;
     }
 
     // Update is called once per frame
