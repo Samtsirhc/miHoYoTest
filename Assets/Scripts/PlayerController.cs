@@ -39,7 +39,8 @@ public class PlayerController : MonoBehaviour
     private int attack_id = Animator.StringToHash("attack");
     private int combo_id = Animator.StringToHash("combo");
     private int attack_type_id = Animator.StringToHash("attack_type");
-    private int evade_id = Animator.StringToHash("evade");
+    private int evade_backward_id = Animator.StringToHash("evade_backward");
+    private int evade_forward_id = Animator.StringToHash("evade_forward");
     #endregion
 
 
@@ -74,15 +75,24 @@ public class PlayerController : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.K))
         {
-            animator.SetTrigger(evade_id);
-            ComboFinished();
+            if (IsMovePressed())
+            {
+                Debug.Log("向前闪避！");
+                animator.SetTrigger(evade_forward_id);
+            }
+            else
+            {
+                Debug.Log("向后闪避！");
+                animator.SetTrigger(evade_backward_id);
+            }
+            AnimEvt_ComboFinished();
             canMove = false;
             canAttack = false;
             canEvade = false;
         }
     }
 
-    void EvadeFinished()
+    void AnimEvt_EvadeFinished()
     {
         Debug.Log("闪避结束");
         canMove = true;
@@ -153,17 +163,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void TimeToSwitch()
+    void AnimEvt_DamageZone()
+    {
+
+    }
+
+    void AnimEvt_TimeToSwitch()
     {
         CanAttack();
     }
 
-    void SwitchAttackType()
+    void AnimEvt_SwitchAttackType()
     {
         attackType = 2;
     }
 
-    void ComboFinished()
+    void AnimEvt_ComboFinished()
     {
         Debug.Log("结束连招！"  + combo);
         combo = 0;
@@ -254,7 +269,7 @@ public class PlayerController : MonoBehaviour
         }
         if (IsMovePressed() && canMove)
         {
-            Debug.Log("在移动");
+            //Debug.Log("在移动");
             animator.SetFloat(move_speed_id, moveSpeed);
             if (canMove)
             {
