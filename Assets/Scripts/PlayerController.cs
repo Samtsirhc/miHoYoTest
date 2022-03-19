@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     public float turnSpeed;
     public float preinputTime;
     public GameObject myCamera;
+    public GameObject skillPfb;
+    public GameObject skillObjStart;
 
     public Vector3 moveDirection;
     public float attackHoldTime;
@@ -186,6 +188,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void AnimEvt_Skill_01()
+    {
+        GameObject _obj = Instantiate(skillPfb);
+        _obj.transform.position = skillObjStart.transform.position;
+    }
     void AnimEvt_DamageZone()
     {
 
