@@ -11,6 +11,11 @@ public class PlayerController : MonoBehaviour
     public GameObject skillPfb;
     public GameObject skillObjStart;
 
+    public GameObject damageZone_01;
+    public GameObject damageZone_02;
+    public GameObject damageZone_03;
+    public GameObject damageZone_04;
+
     public Vector3 moveDirection;
     public float attackHoldTime;
     private float cameraY;
@@ -98,6 +103,23 @@ public class PlayerController : MonoBehaviour
             if (IsMovePressed())
             {
                 Debug.Log("向前闪避！");
+                moveDirection = Vector3.zero;
+                if (Input.GetKey(KeyCode.W))
+                {
+                    moveDirection = GetCameraDirection();
+                }
+                else if (Input.GetKey(KeyCode.S))
+                {
+                    moveDirection = -GetCameraDirection(); ;
+                }
+                if (Input.GetKey(KeyCode.A))
+                {
+                    moveDirection += Vector3.Cross(GetCameraDirection(), new Vector3(0, 1, 0));
+                }
+                else if (Input.GetKey(KeyCode.D))
+                {
+                    moveDirection += Vector3.Cross(GetCameraDirection(), new Vector3(0, -1, 0));
+                }
                 animator.SetTrigger(evade_forward_id);
             }
             else
@@ -161,7 +183,7 @@ public class PlayerController : MonoBehaviour
             attackPreTime += Time.deltaTime;
             if (canAttack)
             {
-                Debug.Log("应用攻击！" + combo);
+                //Debug.Log("应用攻击！" + combo);
                 if (IsMovePressed())
                 {
                     transform.forward = moveDirection;
@@ -188,14 +210,30 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void AnimEvt_AttackDamage(int index)
+    {
+        switch (index)
+        {
+            case 1:
+                damageZone_01.SetActive(true);
+                break;
+            case 2:
+                damageZone_02.SetActive(true);
+                break;
+            case 3:
+                damageZone_03.SetActive(true);
+                break;
+            case 4:
+                damageZone_04.SetActive(true);
+                break;
+            default:
+                break;
+        }
+    }
     void AnimEvt_Skill_01()
     {
         GameObject _obj = Instantiate(skillPfb);
         _obj.transform.position = skillObjStart.transform.position;
-    }
-    void AnimEvt_DamageZone()
-    {
-
     }
 
     void AnimEvt_TimeToSwitch()
@@ -210,7 +248,7 @@ public class PlayerController : MonoBehaviour
 
     void AnimEvt_ComboFinished()
     {
-        Debug.Log("结束连招！"  + combo);
+        //Debug.Log("结束连招！"  + combo);
         combo = 0;
         attackType = 1;
         animator.SetBool(attack_id, false);
@@ -334,15 +372,20 @@ public class PlayerController : MonoBehaviour
     #region 声音
     void PlaySound()
     {
-        if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Run" && effectSound.clip != effectSound_Run)
+        try
         {
-            effectSound.clip = effectSound_Run;
-            effectSound.Play();
+            if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Run" && effectSound.clip != effectSound_Run)
+            {
+                effectSound.clip = effectSound_Run;
+                effectSound.Play();
+            }
+            if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "Run" && effectSound.clip == effectSound_Run)
+            {
+                effectSound.clip = effectSound_Attack_01;
+            }
         }
-        if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "Run" && effectSound.clip == effectSound_Run)
-        {
-            effectSound.clip = effectSound_Attack_01;
-        }
+        finally { }
+
     }
 
     void AnimEvt_PlayEffectSound(string sound_name)
