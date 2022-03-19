@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     #region 状态控制开关
     private bool canMove = true;
     private bool canAttack = true;
+    private bool canEvade = true;
     #endregion
 
     #region 组件
@@ -33,18 +34,19 @@ public class PlayerController : MonoBehaviour
     private CharacterController characterController;
     #endregion
 
-
+    #region 动画参数ID
     private int move_speed_id = Animator.StringToHash("moveSpeed");
     private int attack_id = Animator.StringToHash("attack");
     private int combo_id = Animator.StringToHash("combo");
     private int attack_type_id = Animator.StringToHash("attack_type");
-    private int start_attack_id = Animator.StringToHash("start_attack");
-
+    private int evade_id = Animator.StringToHash("evade");
+    #endregion
 
 
     private void Awake()
     {
         moveDirection = new Vector3();
+        attackHoldTimer = 0;
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
         characterController = GetComponent<CharacterController>();
@@ -57,10 +59,40 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Movement2();
+        Evade();
+        Movement();
         Attack();
     }
 
+    #region 闪避
+
+    void Evade()
+    {
+        if (!canEvade)
+        {
+            return;
+        }
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            animator.SetTrigger(evade_id);
+            ComboFinished();
+            canMove = false;
+            canAttack = false;
+            canEvade = false;
+        }
+    }
+
+    void EvadeFinished()
+    {
+        Debug.Log("闪避结束");
+        canMove = true;
+        canAttack = true;
+        canEvade = true;
+    }
+
+    #endregion
+
+    #region 攻击
     void Attack()
     {
         if (Input.GetKey(KeyCode.J))
@@ -71,6 +103,24 @@ public class PlayerController : MonoBehaviour
         {
             attackHoldTimer = 0;
         }
+        if (attackHoldTimer > attackHoldTime && combo >= 2 && combo <= 3 && canAttack)
+        {
+            Debug.Log("长按生效了" + combo);
+            if (IsMovePressed())
+            {
+                transform.forward = moveDirection;
+            }
+            attackHoldTimer = 0;
+            attackType = 2;
+            combo += 1;
+            animator.SetBool(attack_id, true);
+            animator.SetInteger(combo_id, combo);
+            animator.SetInteger(attack_type_id, attackType);
+            attackPressed = false;
+            attackPreTime = 0;
+            canAttack = false;
+            canMove = false;
+        }
         if (attackPressed)
         {
             attackPreTime += Time.deltaTime;
@@ -80,17 +130,8 @@ public class PlayerController : MonoBehaviour
                 if (IsMovePressed())
                 {
                     transform.forward = moveDirection;
-                    //Debug.Log("转向了！" + moveDirection);
                 }
-                if (attackHoldTimer > attackHoldTime)
-                {
-                    combo += 1;
-                    attackType = 2;
-                }
-                else
-                {
-                    combo += 1;
-                }
+                combo += 1;
                 animator.SetBool(attack_id, true);
                 animator.SetInteger(combo_id, combo);
                 animator.SetInteger(attack_type_id, attackType);
@@ -139,7 +180,7 @@ public class PlayerController : MonoBehaviour
     {
         canAttack = true;
     }
-
+    #endregion
 
     #region 移动和摄像机
 
@@ -148,7 +189,7 @@ public class PlayerController : MonoBehaviour
         transform.forward += (target - transform.forward) * turnSpeed * Time.deltaTime;
     }
 
-    void Movement()
+    void Movement_abandoned()
     {
         if (animator.GetBool(attack_id))
         {
@@ -185,7 +226,7 @@ public class PlayerController : MonoBehaviour
             animator.SetFloat(move_speed_id, 0);
         }
     }
-    void Movement2()
+    void Movement()
     {
         if (IsMovePressed())
         {
@@ -211,16 +252,15 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
-        if (IsMovePressed())
+        if (IsMovePressed() && canMove)
         {
+            Debug.Log("在移动");
             animator.SetFloat(move_speed_id, moveSpeed);
             if (canMove)
             {
-                //Debug.Log("转向了！"+ moveDirection);
                 TrunSmooth(moveDirection.normalized);
-                //transform.forward = moveDirection.normalized;
+                characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
             }
-            characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
         }
         else
         {
