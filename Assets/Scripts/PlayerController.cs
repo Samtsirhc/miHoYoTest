@@ -1,9 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
 public class PlayerController : MonoBehaviour
 {
+    public List<GameObject> enemyList;
+
+    public CinemachineImpulseSource impulseSource_01;
+
     public float moveSpeed;
     public float turnSpeed;
     public float preinputTime;
@@ -163,7 +168,14 @@ public class PlayerController : MonoBehaviour
         if (attackHoldTimer > attackHoldTime && combo >= 2 && combo <= 3 && canAttack)
         {
             Debug.Log("长按生效了" + combo);
-            if (IsMovePressed())
+            GameObject _nearestEnemy = GetNearestEnemy();
+            if (_nearestEnemy)
+            {
+                Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
+                _tmp.y = 0;
+                transform.forward = _tmp;
+            }
+            else if (IsMovePressed())
             {
                 transform.forward = moveDirection;
             }
@@ -184,7 +196,14 @@ public class PlayerController : MonoBehaviour
             if (canAttack)
             {
                 //Debug.Log("应用攻击！" + combo);
-                if (IsMovePressed())
+                GameObject _nearestEnemy = GetNearestEnemy();
+                if (_nearestEnemy)
+                {
+                    Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
+                    _tmp.y = 0;
+                    transform.forward = _tmp;
+                }
+                else if (IsMovePressed())
                 {
                     transform.forward = moveDirection;
                 }
@@ -229,6 +248,7 @@ public class PlayerController : MonoBehaviour
             default:
                 break;
         }
+        impulseSource_01.GenerateImpulse();
     }
     void AnimEvt_Skill_01()
     {
@@ -368,7 +388,6 @@ public class PlayerController : MonoBehaviour
     }
     #endregion
 
-
     #region 声音
     void PlaySound()
     {
@@ -443,5 +462,49 @@ public class PlayerController : MonoBehaviour
         }
         girlSound.Play();
     }
+    #endregion
+
+    #region 全局管理
+    void UpdateEnemyList()
+    {
+        GameObject[] _enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        enemyList = new List<GameObject>();
+        foreach (var item in _enemies)
+        {
+            if (!item.GetComponent<Enemy>().dead)
+            {
+                enemyList.Add(item);
+            }
+        }
+    }
+
+    GameObject GetNearestEnemy()
+    {
+        UpdateEnemyList();
+        float _dis = 99999;
+        GameObject _enemy = null;
+        foreach (GameObject item in enemyList)
+        {
+            if (Vector3.Distance(item.transform.position, transform.position) < _dis)
+            {
+                _dis = Vector3.Distance(item.transform.position, transform.position);
+                _enemy = item;
+            }
+        }
+        if (_dis > 10)
+        {
+            return null;
+        }
+        return _enemy;
+    }
+
+
+    IEnumerator SlowUpdate()
+    {
+        //UpdateEnemyList();
+        yield return new WaitForSeconds(1);
+        StartCoroutine(SlowUpdate());
+    }
+
     #endregion
 }
