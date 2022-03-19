@@ -13,6 +13,23 @@ public class PlayerController : MonoBehaviour
     public float attackHoldTime;
     private float cameraY;
 
+    #region ÉùÒôÎÄ¼þ
+    public AudioSource girlSound;
+    public AudioSource effectSound;
+    public AudioClip girlSound_01_01;
+    public AudioClip girlSound_01_02;
+    public AudioClip girlSound_01_03;
+    public AudioClip girlSound_01_04;
+    public AudioClip girlSound_01_05;
+    public AudioClip girlSound_02_03;
+    public AudioClip girlSound_02_04;
+    public AudioClip effectSound_Attack_01;
+    public AudioClip effectSound_Attack_02;
+    public AudioClip effectSound_Attack_04;
+    public AudioClip effectSound_Attack_05;
+    public AudioClip effectSound_Run;
+    public AudioClip effectSound_Evade;
+    #endregion
 
     #region ¹¥»÷²ÎÊý
     private bool attackPressed;
@@ -63,6 +80,7 @@ public class PlayerController : MonoBehaviour
         Evade();
         Movement();
         Attack();
+        PlaySound();
     }
 
     #region ÉÁ±Ü
@@ -89,6 +107,8 @@ public class PlayerController : MonoBehaviour
             canMove = false;
             canAttack = false;
             canEvade = false;
+            attackPressed = false;
+            attackPreTime = 0;
         }
     }
 
@@ -98,6 +118,9 @@ public class PlayerController : MonoBehaviour
         canMove = true;
         canAttack = true;
         canEvade = true;
+        attackPressed = false;
+        attackPreTime = 0;
+        AnimEvt_ComboFinished();
     }
 
     #endregion
@@ -297,6 +320,78 @@ public class PlayerController : MonoBehaviour
         _directon = transform.position - myCamera.transform.position;
         _directon.y = 0;
         return _directon.normalized;
+    }
+    #endregion
+
+
+    #region ÉùÒô
+    void PlaySound()
+    {
+        if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Run" && effectSound.clip != effectSound_Run)
+        {
+            effectSound.clip = effectSound_Run;
+            effectSound.Play();
+        }
+        if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "Run" && effectSound.clip == effectSound_Run)
+        {
+            effectSound.clip = effectSound_Attack_01;
+        }
+    }
+
+    void AnimEvt_PlayEffectSound(string sound_name)
+    {
+        switch (sound_name)
+        {
+            case "effectSound_Evade":
+                effectSound.clip = effectSound_Evade;
+                break;
+            case "effectSound_Attack_01":
+                effectSound.clip = effectSound_Attack_01;
+                break;
+            case "effectSound_Attack_02":
+                effectSound.clip = effectSound_Attack_02;
+                break;
+            case "effectSound_Attack_04":
+                effectSound.clip = effectSound_Attack_04;
+                break;
+            case "effectSound_Attack_05":
+                effectSound.clip = effectSound_Attack_05;
+                break;
+            default:
+                break;
+        }
+        effectSound.Play();
+    }
+
+    void AnimEvt_PlayGirlSound(string sound_name)
+    {
+        switch (sound_name)
+        {
+            case "girlSound_01_01":
+                girlSound.clip = girlSound_01_01;
+                break;
+            case "girlSound_01_02":
+                girlSound.clip = girlSound_01_02;
+                break;
+            case "girlSound_01_03":
+                girlSound.clip = girlSound_01_03;
+                break;
+            case "girlSound_01_04":
+                girlSound.clip = girlSound_01_04;
+                break;
+            case "girlSound_01_05":
+                girlSound.clip = girlSound_01_05;
+                break;
+            case "girlSound_02_03":
+                girlSound.clip = girlSound_02_03;
+                break;
+            case "girlSound_02_04":
+                girlSound.clip = girlSound_02_04;
+                break;
+            default:
+                break;
+        }
+        girlSound.Play();
     }
     #endregion
 }
