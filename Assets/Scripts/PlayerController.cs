@@ -404,7 +404,6 @@ public class PlayerController : MonoBehaviour
             }
         }
         finally { }
-
     }
 
     void AnimEvt_PlayEffectSound(string sound_name)
