@@ -228,7 +228,6 @@ public class PlayerController : MonoBehaviour
             attackPreTime = 0;
         }
     }
-
     void AnimEvt_AttackDamage(int index)
     {
         switch (index)
@@ -490,7 +489,7 @@ public class PlayerController : MonoBehaviour
                 _enemy = item;
             }
         }
-        if (_dis > 10)
+        if (_dis > 7.5)
         {
             return null;
         }

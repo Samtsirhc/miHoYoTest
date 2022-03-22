@@ -1768,7 +1768,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 518443225}
-  m_LocalRotation: {x: 0.05758122, y: 0.81799227, z: -0.083178565, w: 0.56626356}
+  m_LocalRotation: {x: 0.05758122, y: 0.81799215, z: -0.083178565, w: 0.5662636}
   m_LocalPosition: {x: -6.1008673, y: 2.62, z: 3.709738}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -2910,7 +2910,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_LocalRotation: {x: 0.05758122, y: 0.81799227, z: -0.083178565, w: 0.56626356}
+  m_LocalRotation: {x: 0.05758122, y: 0.81799215, z: -0.083178565, w: 0.5662636}
   m_LocalPosition: {x: -6.1008673, y: 2.62, z: 3.709738}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -3027,28 +3027,15 @@ GameObject:
   - component: {fileID: 1826885437}
   - component: {fileID: 1826885436}
   - component: {fileID: 1826885435}
-  - component: {fileID: 1826885434}
   - component: {fileID: 1826885438}
+  - component: {fileID: 1826885439}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Enemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!65 &1826885434
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826885433}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1826885435
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3128,6 +3115,24 @@ MonoBehaviour:
   hp: 600
   hpBarPfb: {fileID: 1914550704512300728, guid: 69434a9f2e416fd428d260689262a988, type: 3}
   dead: 0
+--- !u!143 &1826885439
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826885433}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 0.99999994
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0.36, z: 0}
 --- !u!1 &1904166338
 GameObject:
   m_ObjectHideFlags: 0
