@@ -5,13 +5,28 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float maxHp;
-    public float hp = 600;
+    public float hp
+    {
+        get { return _hp; }
+        set
+        {
+            if (value <= 0)
+            {
+                _hp = 0;
+            }
+            else
+            {
+                _hp = value;
+            }
+        }
+    }
+    private float _hp;
     public GameObject hpBarPfb;
     public bool dead;
     // Start is called before the first frame update
     void Start()
     {
-        maxHp = hp;
+        hp = maxHp;
         GameObject hpBar = Instantiate(hpBarPfb, GameObject.Find("Canvas").transform);
         hpBar.GetComponent<HpBar>().enemy = this;
         hpBar.GetComponent<HpBar>().host = gameObject;

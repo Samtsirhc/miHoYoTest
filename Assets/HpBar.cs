@@ -9,6 +9,7 @@ public class HpBar : MonoBehaviour
     public GameObject host;
     public float curRate;
     public float offset = 1.25f;
+    public Text text;
 
     public Enemy enemy;
     private Camera cam;
@@ -26,6 +27,7 @@ public class HpBar : MonoBehaviour
     {
         SetPosition(offset);
         curRate = enemy.hp / enemy.maxHp;
+        text.text = enemy.hp.ToString() + "/" + enemy.maxHp.ToString();
         quickBar.GetComponent<Slider>().value = curRate;
         GetComponent<Slider>().value = Mathf.Lerp(GetComponent<Slider>().value, curRate, Time.deltaTime * 2);
         if (curRate < 0.001)
