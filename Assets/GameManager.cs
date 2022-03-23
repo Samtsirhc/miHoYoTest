@@ -7,6 +7,11 @@ public class GameManager : MonoBehaviour
     public GameObject enemy;
     public float timer;
 
+
+    private void Start()
+    {
+        StartCoroutine(CreateEnemy());
+    }
     IEnumerator CreateEnemy()
     {
         yield return new WaitForSeconds(timer);
