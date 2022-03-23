@@ -15,8 +15,10 @@ public class PlayerController : MonoBehaviour
     public float skillCd;
     public float skillCdTimer;
     public GameObject myCamera;
-    public GameObject skillPfb;
-    public GameObject skillObjStart;
+    public GameObject skillPfb_01;
+    public GameObject skillObjStart_01;
+    public GameObject skillPfb_02;
+    public GameObject skillObjStart_02;
 
     public GameObject damageZone_01;
     public GameObject damageZone_02;
@@ -291,8 +293,13 @@ public class PlayerController : MonoBehaviour
     }
     void AnimEvt_Skill_01()
     {
-        GameObject _obj = Instantiate(skillPfb);
-        _obj.transform.position = skillObjStart.transform.position;
+        GameObject _obj = Instantiate(skillPfb_01);
+        _obj.transform.position = skillObjStart_01.transform.position;
+    }
+    void AnimEvt_Skill_02()
+    {
+        GameObject _obj = Instantiate(skillPfb_02);
+        _obj.transform.position = skillObjStart_02.transform.position;
     }
 
     void AnimEvt_TimeToSwitch()

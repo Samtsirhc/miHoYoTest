@@ -18,23 +18,23 @@ public class SkillDamageZone_01 : MonoBehaviour
             float _damage = 0;
             if (_distance < 2)
             {
-                _damage = 400;
+                _damage = 800;
             }
             else if (_distance < 2.5)
             {
-                _damage = 200;
+                _damage = 500;
             }
             else if (_distance < 3)
             {
-                _damage = 150;
+                _damage = 400;
             }
             else if (_distance < 3.5)
             {
-                _damage = 100;
+                _damage = 300;
             }
             else
             {
-                _damage = 50;
+                _damage = 200;
             }
             _enemy.TakeDamage(_damage);
             Debug.Log(other.gameObject);
