@@ -22,7 +22,7 @@ public class CDTip : MonoBehaviour
         }
         else
         {
-            text.text = "技能冷却中 " + (int)(playerController.skillCd - playerController.skillCdTimer);
+            text.text = "技能冷却中 " + (int)(playerController.skillCdTimer);
         }
     }
 }

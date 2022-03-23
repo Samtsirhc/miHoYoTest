@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : Singleton<PlayerController>
 {
     public List<GameObject> enemyList;
 
@@ -14,6 +14,10 @@ public class PlayerController : MonoBehaviour
     public float preinputTime;
     public float skillCd;
     public float skillCdTimer;
+    public float evadeTime;
+
+    private float evadeTimer;
+
     public GameObject myCamera;
     public GameObject skillPfb_01;
     public GameObject skillObjStart_01;
@@ -78,18 +82,17 @@ public class PlayerController : MonoBehaviour
     private int skill_id = Animator.StringToHash("skill");
     #endregion
 
-
-    private void Awake()
+    #region 脚本函数
+    protected override void Awake()
     {
+        base.Awake();
         moveDirection = new Vector3();
         attackHoldTimer = 0;
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
         characterController = GetComponent<CharacterController>();
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
+        skillCdTimer = 0;
+        isSkillCd = true;
     }
 
     // Update is called once per frame
@@ -101,11 +104,13 @@ public class PlayerController : MonoBehaviour
         Attack();
         PlaySound();
     }
+    #endregion
 
     #region 闪避
 
     void Evade()
     {
+        evadeTimer += Time.deltaTime;
         if (!canEvade)
         {
             return;
@@ -145,6 +150,7 @@ public class PlayerController : MonoBehaviour
             canEvade = false;
             attackPressed = false;
             attackPreTime = 0;
+            evadeTimer = 0;
         }
     }
 
@@ -161,19 +167,44 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    #region 受伤
+    public void TakeDamage(float damage)
+    {
+        Debug.Log("打到了！");
+        if (evadeTimer < evadeTime)
+        {
+            PrefectEvade();
+        }
+    }
+
+    IEnumerator TimeFreeze(float time)
+    {
+        Time.timeScale = 0.1f;
+        yield return new WaitForSecondsRealtime(time);
+        Time.timeScale = 1f;
+    }
+
+    public void PrefectEvade()
+    {
+        StartCoroutine(TimeFreeze(0.3f));
+        skillCdTimer = 0;
+        isSkillCd = true;
+        Debug.Log("完美闪避！");
+    }
+    #endregion
+
     #region 攻击
     void Skill()
     {
-        if (skillCdTimer >= skillCd)
+        if (skillCdTimer <= 0)
         {
             isSkillCd = true;
-            skillCdTimer = skillCd;
         }
         if (!isSkillCd)
         {
-            skillCdTimer += Time.deltaTime;
+            skillCdTimer -= Time.deltaTime;
         }
-        if (!isSkillCd && !canSkill)
+        if (!isSkillCd || !canSkill)
         {
             return;
         }
@@ -185,7 +216,7 @@ public class PlayerController : MonoBehaviour
             canEvade = false;
             canSkill = false;
             isSkillCd = false;
-            skillCdTimer = 0;
+            skillCdTimer = skillCd;
         }
     }
 
