@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     public float turnSpeed;
     public float preinputTime;
+    public float skillCd;
+    public float skillCdTimer;
     public GameObject myCamera;
     public GameObject skillPfb;
     public GameObject skillObjStart;
@@ -23,7 +25,6 @@ public class PlayerController : MonoBehaviour
 
     public Vector3 moveDirection;
     public float attackHoldTime;
-    private float cameraY;
 
     #region 声音文件
     public AudioSource girlSound;
@@ -55,6 +56,8 @@ public class PlayerController : MonoBehaviour
     private bool canMove = true;
     private bool canAttack = true;
     private bool canEvade = true;
+    private bool canSkill = true;
+    public bool isSkillCd = true;
     #endregion
 
     #region 组件
@@ -70,6 +73,7 @@ public class PlayerController : MonoBehaviour
     private int attack_type_id = Animator.StringToHash("attack_type");
     private int evade_backward_id = Animator.StringToHash("evade_backward");
     private int evade_forward_id = Animator.StringToHash("evade_forward");
+    private int skill_id = Animator.StringToHash("skill");
     #endregion
 
 
@@ -89,6 +93,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Skill();
         Evade();
         Movement();
         Attack();
@@ -155,6 +160,41 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region 攻击
+    void Skill()
+    {
+        if (skillCdTimer >= skillCd)
+        {
+            isSkillCd = true;
+            skillCdTimer = skillCd;
+        }
+        if (!isSkillCd)
+        {
+            skillCdTimer += Time.deltaTime;
+        }
+        if (!isSkillCd && !canSkill)
+        {
+            return;
+        }
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            animator.SetTrigger(skill_id);
+            canAttack = false;
+            canMove = false;
+            canEvade = false;
+            canSkill = false;
+            isSkillCd = false;
+            skillCdTimer = 0;
+        }
+    }
+
+    void AnimEvt_SkillFinished()
+    {
+        canAttack = true;
+        canMove = true;
+        canEvade = true;
+        canSkill = true;
+    }
+
     void Attack()
     {
         if (Input.GetKey(KeyCode.J))
