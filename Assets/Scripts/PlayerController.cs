@@ -1,17 +1,36 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : Singleton<PlayerController>
 {
+    public List<GameObject> enemyList;
+
+    public CinemachineImpulseSource impulseSource_01;
+
     public float moveSpeed;
     public float turnSpeed;
     public float preinputTime;
+    public float skillCd;
+    public float skillCdTimer;
+    public float evadeTime;
+
+    private float evadeTimer;
+
     public GameObject myCamera;
+    public GameObject skillPfb_01;
+    public GameObject skillObjStart_01;
+    public GameObject skillPfb_02;
+    public GameObject skillObjStart_02;
+
+    public GameObject damageZone_01;
+    public GameObject damageZone_02;
+    public GameObject damageZone_03;
+    public GameObject damageZone_04;
 
     public Vector3 moveDirection;
     public float attackHoldTime;
-    private float cameraY;
 
     #region 声音文件
     public AudioSource girlSound;
@@ -43,6 +62,8 @@ public class PlayerController : MonoBehaviour
     private bool canMove = true;
     private bool canAttack = true;
     private bool canEvade = true;
+    private bool canSkill = true;
+    public bool isSkillCd = true;
     #endregion
 
     #region 组件
@@ -58,35 +79,38 @@ public class PlayerController : MonoBehaviour
     private int attack_type_id = Animator.StringToHash("attack_type");
     private int evade_backward_id = Animator.StringToHash("evade_backward");
     private int evade_forward_id = Animator.StringToHash("evade_forward");
+    private int skill_id = Animator.StringToHash("skill");
     #endregion
 
-
-    private void Awake()
+    #region 脚本函数
+    protected override void Awake()
     {
+        base.Awake();
         moveDirection = new Vector3();
         attackHoldTimer = 0;
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
         characterController = GetComponent<CharacterController>();
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
+        skillCdTimer = 0;
+        isSkillCd = true;
     }
 
     // Update is called once per frame
     void Update()
     {
+        Skill();
         Evade();
         Movement();
         Attack();
         PlaySound();
     }
+    #endregion
 
     #region 闪避
 
     void Evade()
     {
+        evadeTimer += Time.deltaTime;
         if (!canEvade)
         {
             return;
@@ -96,6 +120,23 @@ public class PlayerController : MonoBehaviour
             if (IsMovePressed())
             {
                 Debug.Log("向前闪避！");
+                moveDirection = Vector3.zero;
+                if (Input.GetKey(KeyCode.W))
+                {
+                    moveDirection = GetCameraDirection();
+                }
+                else if (Input.GetKey(KeyCode.S))
+                {
+                    moveDirection = -GetCameraDirection(); ;
+                }
+                if (Input.GetKey(KeyCode.A))
+                {
+                    moveDirection += Vector3.Cross(GetCameraDirection(), new Vector3(0, 1, 0));
+                }
+                else if (Input.GetKey(KeyCode.D))
+                {
+                    moveDirection += Vector3.Cross(GetCameraDirection(), new Vector3(0, -1, 0));
+                }
                 animator.SetTrigger(evade_forward_id);
             }
             else
@@ -109,6 +150,7 @@ public class PlayerController : MonoBehaviour
             canEvade = false;
             attackPressed = false;
             attackPreTime = 0;
+            evadeTimer = 0;
         }
     }
 
@@ -125,7 +167,67 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    #region 受伤
+    public void TakeDamage(float damage)
+    {
+        Debug.Log("打到了！");
+        if (evadeTimer < evadeTime)
+        {
+            PrefectEvade();
+        }
+    }
+
+    IEnumerator TimeFreeze(float time)
+    {
+        Time.timeScale = 0.1f;
+        yield return new WaitForSecondsRealtime(time);
+        Time.timeScale = 1f;
+    }
+
+    public void PrefectEvade()
+    {
+        StartCoroutine(TimeFreeze(0.3f));
+        skillCdTimer = 0;
+        isSkillCd = true;
+        Debug.Log("完美闪避！");
+    }
+    #endregion
+
     #region 攻击
+    void Skill()
+    {
+        if (skillCdTimer <= 0)
+        {
+            isSkillCd = true;
+        }
+        if (!isSkillCd)
+        {
+            skillCdTimer -= Time.deltaTime;
+        }
+        if (!isSkillCd || !canSkill)
+        {
+            return;
+        }
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            animator.SetTrigger(skill_id);
+            canAttack = false;
+            canMove = false;
+            canEvade = false;
+            canSkill = false;
+            isSkillCd = false;
+            skillCdTimer = skillCd;
+        }
+    }
+
+    void AnimEvt_SkillFinished()
+    {
+        canAttack = true;
+        canMove = true;
+        canEvade = true;
+        canSkill = true;
+    }
+
     void Attack()
     {
         if (Input.GetKey(KeyCode.J))
@@ -139,7 +241,14 @@ public class PlayerController : MonoBehaviour
         if (attackHoldTimer > attackHoldTime && combo >= 2 && combo <= 3 && canAttack)
         {
             Debug.Log("长按生效了" + combo);
-            if (IsMovePressed())
+            GameObject _nearestEnemy = GetNearestEnemy();
+            if (_nearestEnemy)
+            {
+                Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
+                _tmp.y = 0;
+                transform.forward = _tmp;
+            }
+            else if (IsMovePressed())
             {
                 transform.forward = moveDirection;
             }
@@ -159,8 +268,15 @@ public class PlayerController : MonoBehaviour
             attackPreTime += Time.deltaTime;
             if (canAttack)
             {
-                Debug.Log("应用攻击！" + combo);
-                if (IsMovePressed())
+                //Debug.Log("应用攻击！" + combo);
+                GameObject _nearestEnemy = GetNearestEnemy();
+                if (_nearestEnemy)
+                {
+                    Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
+                    _tmp.y = 0;
+                    transform.forward = _tmp;
+                }
+                else if (IsMovePressed())
                 {
                     transform.forward = moveDirection;
                 }
@@ -185,10 +301,36 @@ public class PlayerController : MonoBehaviour
             attackPreTime = 0;
         }
     }
-
-    void AnimEvt_DamageZone()
+    void AnimEvt_AttackDamage(int index)
     {
-
+        switch (index)
+        {
+            case 1:
+                damageZone_01.SetActive(true);
+                break;
+            case 2:
+                damageZone_02.SetActive(true);
+                break;
+            case 3:
+                damageZone_03.SetActive(true);
+                break;
+            case 4:
+                damageZone_04.SetActive(true);
+                break;
+            default:
+                break;
+        }
+        impulseSource_01.GenerateImpulse();
+    }
+    void AnimEvt_Skill_01()
+    {
+        GameObject _obj = Instantiate(skillPfb_01);
+        _obj.transform.position = skillObjStart_01.transform.position;
+    }
+    void AnimEvt_Skill_02()
+    {
+        GameObject _obj = Instantiate(skillPfb_02);
+        _obj.transform.position = skillObjStart_02.transform.position;
     }
 
     void AnimEvt_TimeToSwitch()
@@ -203,7 +345,7 @@ public class PlayerController : MonoBehaviour
 
     void AnimEvt_ComboFinished()
     {
-        Debug.Log("结束连招！"  + combo);
+        //Debug.Log("结束连招！"  + combo);
         combo = 0;
         attackType = 1;
         animator.SetBool(attack_id, false);
@@ -323,19 +465,22 @@ public class PlayerController : MonoBehaviour
     }
     #endregion
 
-
     #region 声音
     void PlaySound()
     {
-        if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Run" && effectSound.clip != effectSound_Run)
+        try
         {
-            effectSound.clip = effectSound_Run;
-            effectSound.Play();
+            if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Run" && effectSound.clip != effectSound_Run)
+            {
+                effectSound.clip = effectSound_Run;
+                effectSound.Play();
+            }
+            if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "Run" && effectSound.clip == effectSound_Run)
+            {
+                effectSound.clip = effectSound_Attack_01;
+            }
         }
-        if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "Run" && effectSound.clip == effectSound_Run)
-        {
-            effectSound.clip = effectSound_Attack_01;
-        }
+        finally { }
     }
 
     void AnimEvt_PlayEffectSound(string sound_name)
@@ -393,5 +538,49 @@ public class PlayerController : MonoBehaviour
         }
         girlSound.Play();
     }
+    #endregion
+
+    #region 全局管理
+    void UpdateEnemyList()
+    {
+        GameObject[] _enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        enemyList = new List<GameObject>();
+        foreach (var item in _enemies)
+        {
+            if (!item.GetComponent<Enemy>().dead)
+            {
+                enemyList.Add(item);
+            }
+        }
+    }
+
+    GameObject GetNearestEnemy()
+    {
+        UpdateEnemyList();
+        float _dis = 99999;
+        GameObject _enemy = null;
+        foreach (GameObject item in enemyList)
+        {
+            if (Vector3.Distance(item.transform.position, transform.position) < _dis)
+            {
+                _dis = Vector3.Distance(item.transform.position, transform.position);
+                _enemy = item;
+            }
+        }
+        if (_dis > 7.5)
+        {
+            return null;
+        }
+        return _enemy;
+    }
+
+
+    IEnumerator SlowUpdate()
+    {
+        //UpdateEnemyList();
+        yield return new WaitForSeconds(1);
+        StartCoroutine(SlowUpdate());
+    }
+
     #endregion
 }
