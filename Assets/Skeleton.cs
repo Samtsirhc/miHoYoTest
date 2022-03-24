@@ -12,6 +12,7 @@ public class Skeleton : Enemy
     private bool canAttack = true;
     private bool isMovingToPlayer;
     private bool isPreAct = false;
+    public AudioSource audioSource;
 
 
     #region ¶¯»­²ÎÊýID
@@ -76,6 +77,7 @@ public class Skeleton : Enemy
     public override void TakeDamage(float damage)
     {
         base.TakeDamage(damage);
+        audioSource.Play();
         if (hp <= 1)
         {
             animator.SetTrigger(die_id);
