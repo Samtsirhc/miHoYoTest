@@ -14,7 +14,7 @@ public class SkillDamageZone_01 : MonoBehaviour
     {
         if (other.gameObject.tag == "Enemy")
         {
-            Enemy _enemy = other.GetComponent<Enemy>();
+            Enemy_Old _enemy = other.GetComponent<Enemy_Old>();
             float _distance = Vector3.Distance(_enemy.transform.position, transform.position);
             Vector3 _direction = _enemy.transform.position - transform.position;
             _direction.y = 0;

@@ -19,10 +19,7 @@ public class PlayerController : Singleton<PlayerController>
     private float evadeTimer;
 
     public GameObject myCamera;
-    public GameObject skillPfb_01;
-    public GameObject skillObjStart_01;
-    public GameObject skillPfb_02;
-    public GameObject skillObjStart_02;
+
 
     public GameObject damageZone_01;
     public GameObject damageZone_02;
@@ -32,7 +29,7 @@ public class PlayerController : Singleton<PlayerController>
     public Vector3 moveDirection;
     public float attackHoldTime;
 
-    #region ÉùÒôÎÄ¼ş
+    #region å£°éŸ³æ–‡ä»¶
     public AudioSource girlSound;
     public AudioSource effectSound;
     public AudioClip girlSound_01_01;
@@ -50,7 +47,7 @@ public class PlayerController : Singleton<PlayerController>
     public AudioClip effectSound_Evade;
     #endregion
 
-    #region ¹¥»÷²ÎÊı
+    #region æ”»å‡»å‚æ•°
     private bool attackPressed;
     private float attackPreTime;
     private int combo;
@@ -58,7 +55,7 @@ public class PlayerController : Singleton<PlayerController>
     private float attackHoldTimer;
     #endregion
 
-    #region ×´Ì¬¿ØÖÆ¿ª¹Ø
+    #region çŠ¶æ€æ§åˆ¶å¼€å…³
     private bool canMove = true;
     private bool canAttack = true;
     private bool canEvade = true;
@@ -66,13 +63,13 @@ public class PlayerController : Singleton<PlayerController>
     public bool isSkillCd = true;
     #endregion
 
-    #region ×é¼ş
+    #region ç»„ä»¶
     private Rigidbody rb;
     private Animator animator;
     private CharacterController characterController;
     #endregion
 
-    #region ¶¯»­²ÎÊıID
+    #region åŠ¨ç”»å‚æ•°ID
     private int move_speed_id = Animator.StringToHash("moveSpeed");
     private int attack_id = Animator.StringToHash("attack");
     private int combo_id = Animator.StringToHash("combo");
@@ -82,7 +79,7 @@ public class PlayerController : Singleton<PlayerController>
     private int skill_id = Animator.StringToHash("skill");
     #endregion
 
-    #region ½Å±¾º¯Êı
+    #region è„šæœ¬å‡½æ•°
     protected override void Awake()
     {
         base.Awake();
@@ -106,7 +103,7 @@ public class PlayerController : Singleton<PlayerController>
     }
     #endregion
 
-    #region ÉÁ±Ü
+    #region é—ªé¿
 
     void Evade()
     {
@@ -119,7 +116,7 @@ public class PlayerController : Singleton<PlayerController>
         {
             if (IsMovePressed())
             {
-                Debug.Log("ÏòÇ°ÉÁ±Ü£¡");
+                Debug.Log("å‘å‰é—ªé¿ï¼");
                 moveDirection = Vector3.zero;
                 if (Input.GetKey(KeyCode.W))
                 {
@@ -141,7 +138,7 @@ public class PlayerController : Singleton<PlayerController>
             }
             else
             {
-                Debug.Log("ÏòºóÉÁ±Ü£¡");
+                Debug.Log("å‘åé—ªé¿ï¼");
                 animator.SetTrigger(evade_backward_id);
             }
             AnimEvt_ComboFinished();
@@ -156,7 +153,7 @@ public class PlayerController : Singleton<PlayerController>
 
     void AnimEvt_EvadeFinished()
     {
-        Debug.Log("ÉÁ±Ü½áÊø");
+        Debug.Log("é—ªé¿ç»“æŸ");
         canMove = true;
         canAttack = true;
         canEvade = true;
@@ -167,10 +164,10 @@ public class PlayerController : Singleton<PlayerController>
 
     #endregion
 
-    #region ÊÜÉË
+    #region å—ä¼¤
     public void TakeDamage(float damage)
     {
-        Debug.Log("´òµ½ÁË£¡");
+        Debug.Log("æ‰“åˆ°äº†ï¼");
         if (evadeTimer < evadeTime)
         {
             PrefectEvade();
@@ -189,11 +186,11 @@ public class PlayerController : Singleton<PlayerController>
         StartCoroutine(TimeFreeze(0.3f));
         skillCdTimer = 0;
         isSkillCd = true;
-        Debug.Log("ÍêÃÀÉÁ±Ü£¡");
+        Debug.Log("å®Œç¾é—ªé¿ï¼");
     }
     #endregion
 
-    #region ¹¥»÷
+    #region æ”»å‡»
     void Skill()
     {
         if (skillCdTimer <= 0)
@@ -240,7 +237,7 @@ public class PlayerController : Singleton<PlayerController>
         }
         if (attackHoldTimer > attackHoldTime && combo >= 2 && combo <= 3 && canAttack)
         {
-            Debug.Log("³¤°´ÉúĞ§ÁË" + combo);
+            Debug.Log("é•¿æŒ‰ç”Ÿæ•ˆäº†" + combo);
             GameObject _nearestEnemy = GetNearestEnemy();
             if (_nearestEnemy)
             {
@@ -268,7 +265,7 @@ public class PlayerController : Singleton<PlayerController>
             attackPreTime += Time.deltaTime;
             if (canAttack)
             {
-                //Debug.Log("Ó¦ÓÃ¹¥»÷£¡" + combo);
+                //Debug.Log("åº”ç”¨æ”»å‡»ï¼" + combo);
                 GameObject _nearestEnemy = GetNearestEnemy();
                 if (_nearestEnemy)
                 {
@@ -324,13 +321,11 @@ public class PlayerController : Singleton<PlayerController>
     }
     void AnimEvt_Skill_01()
     {
-        GameObject _obj = Instantiate(skillPfb_01);
-        _obj.transform.position = skillObjStart_01.transform.position;
+
     }
     void AnimEvt_Skill_02()
     {
-        GameObject _obj = Instantiate(skillPfb_02);
-        _obj.transform.position = skillObjStart_02.transform.position;
+
     }
 
     void AnimEvt_TimeToSwitch()
@@ -345,7 +340,7 @@ public class PlayerController : Singleton<PlayerController>
 
     void AnimEvt_ComboFinished()
     {
-        //Debug.Log("½áÊøÁ¬ÕĞ£¡"  + combo);
+        //Debug.Log("ç»“æŸè¿æ‹›ï¼"  + combo);
         combo = 0;
         attackType = 1;
         animator.SetBool(attack_id, false);
@@ -362,50 +357,13 @@ public class PlayerController : Singleton<PlayerController>
     }
     #endregion
 
-    #region ÒÆ¶¯ºÍÉãÏñ»ú
+    #region ç§»åŠ¨å’Œæ‘„åƒæœº
 
     void TrunSmooth(Vector3 target) 
     {
         transform.forward += (target - transform.forward) * turnSpeed * Time.deltaTime;
     }
 
-    void Movement_abandoned()
-    {
-        if (animator.GetBool(attack_id))
-        {
-            return;
-        }
-        if (IsMovePressed())
-        {
-            moveDirection = Vector3.zero;
-        }
-        if (Input.GetKey(KeyCode.W))
-        {
-            moveDirection += new Vector3(-1, 0, 0);
-        }
-        else if (Input.GetKey(KeyCode.S))
-        {
-            moveDirection += new Vector3(1, 0, 0);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            moveDirection += new Vector3(0, 0, -1);
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            moveDirection += new Vector3(0, 0, 1);
-        }
-        if (IsMovePressed())
-        {
-            animator.SetFloat(move_speed_id, moveSpeed);
-            transform.forward = moveDirection;
-            characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
-        }
-        else
-        {
-            animator.SetFloat(move_speed_id, 0);
-        }
-    }
     void Movement()
     {
         if (IsMovePressed())
@@ -434,7 +392,7 @@ public class PlayerController : Singleton<PlayerController>
         }
         if (IsMovePressed() && canMove)
         {
-            //Debug.Log("ÔÚÒÆ¶¯");
+            //Debug.Log("åœ¨ç§»åŠ¨");
             animator.SetFloat(move_speed_id, moveSpeed);
             if (canMove)
             {
@@ -465,7 +423,7 @@ public class PlayerController : Singleton<PlayerController>
     }
     #endregion
 
-    #region ÉùÒô
+    #region å£°éŸ³
     void PlaySound()
     {
         try
@@ -540,14 +498,14 @@ public class PlayerController : Singleton<PlayerController>
     }
     #endregion
 
-    #region È«¾Ö¹ÜÀí
+    #region å…¨å±€ç®¡ç†
     void UpdateEnemyList()
     {
         GameObject[] _enemies = GameObject.FindGameObjectsWithTag("Enemy");
         enemyList = new List<GameObject>();
         foreach (var item in _enemies)
         {
-            if (!item.GetComponent<Enemy>().dead)
+            if (!item.GetComponent<Enemy_Old>().dead)
             {
                 enemyList.Add(item);
             }

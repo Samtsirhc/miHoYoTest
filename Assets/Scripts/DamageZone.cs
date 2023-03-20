@@ -28,7 +28,7 @@ public class DamageZone : MonoBehaviour
     {
         if (other.gameObject.tag == "Enemy")
         {
-            Enemy _enemy = other.GetComponent<Enemy>();
+            Enemy_Old _enemy = other.GetComponent<Enemy_Old>();
             _enemy.TakeDamage(100);
             Debug.Log(other.gameObject);
         }

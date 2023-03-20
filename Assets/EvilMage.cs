@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EvilMage : Enemy
+public class EvilMage : Enemy_Old
 {
     public Animator animator;
     public Vector2 attackCD;
@@ -16,7 +16,7 @@ public class EvilMage : Enemy
     private bool isPreAct = false;
 
 
-    #region ¶¯»­²ÎÊıID
+    #region åŠ¨ç”»å‚æ•°ID
     private int move_speed_id = Animator.StringToHash("moveSpeed");
     private int attack_id = Animator.StringToHash("attack");
     private int die_id = Animator.StringToHash("die");

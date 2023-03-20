@@ -11,7 +11,7 @@ public class HpBar : MonoBehaviour
     public float offset = 1.25f;
     public Text text;
 
-    public Enemy enemy;
+    public Enemy_Old enemy;
     private Camera cam;
     private RectTransform rectTransform;
     // Start is called before the first frame update
@@ -38,7 +38,7 @@ public class HpBar : MonoBehaviour
 
     private void _BossHurt(float rate)
     {
-        // Debug.Log("BOSS ‹…À¡À"+rate);
+        // Debug.Log("BOSSÂèó‰º§‰∫Ü"+rate);
         curRate = rate;
         //boss_blood_rate = _Resize(rate);
         quickBar.GetComponent<Slider>().value = rate;
