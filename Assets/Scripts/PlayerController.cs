@@ -27,7 +27,7 @@ public class PlayerController : Singleton<PlayerController>
     public GameObject damageZone_04;
 
     public Vector3 moveDirection;
-    public float attackHoldTime;
+
 
     #region 声音文件
     public AudioSource girlSound;
@@ -52,7 +52,10 @@ public class PlayerController : Singleton<PlayerController>
     private float attackPreTime;
     private int combo;
     private int attackType = 1;
+    public float attackHoldTime;
+    public float evadeAttackTime = 1;
     private float attackHoldTimer;
+    private float evadeAttackTimer;
     #endregion
 
     #region 状态控制开关
@@ -107,6 +110,7 @@ public class PlayerController : Singleton<PlayerController>
 
     void Evade()
     {
+
         evadeTimer += Time.deltaTime;
         if (!canEvade)
         {
@@ -149,6 +153,10 @@ public class PlayerController : Singleton<PlayerController>
             attackPressed = false;
             attackPreTime = 0;
             evadeTimer = 0;
+
+            // 变更攻击连招
+            evadeAttackTimer = evadeAttackTime;
+            attackType = 2;
         }
     }
 
@@ -213,39 +221,46 @@ public class PlayerController : Singleton<PlayerController>
 
     void Attack()
     {
-        if (Input.GetKey(KeyCode.J))
+        // 闪避变更普攻动作，1秒计时计数后恢复
+        evadeAttackTimer -= Time.deltaTime;
+        if (evadeAttackTimer <= 0)
         {
-            attackHoldTimer += Time.deltaTime;
+            attackType = 1;
         }
-        if (Input.GetKeyUp(KeyCode.J))
-        {
-            attackHoldTimer = 0;
-        }
-        if (attackHoldTimer > attackHoldTime && combo >= 2 && combo <= 3 && canAttack)
-        {
-            Debug.Log("长按生效了" + combo);
-            GameObject _nearestEnemy = GetNearestEnemy();
-            if (_nearestEnemy)
-            {
-                Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
-                _tmp.y = 0;
-                transform.forward = _tmp;
-            }
-            else if (IsMovePressed())
-            {
-                transform.forward = moveDirection;
-            }
-            attackHoldTimer = 0;
-            attackType = 2;
-            combo += 1;
-            animator.SetBool(attack_id, true);
-            animator.SetInteger(combo_id, combo);
-            animator.SetInteger(attack_type_id, attackType);
-            attackPressed = false;
-            attackPreTime = 0;
-            canAttack = false;
-            canMove = false;
-        }
+        // 废弃长按连招分支
+        //if (Input.GetKey(KeyCode.J))
+        //{
+        //    attackHoldTimer += Time.deltaTime;
+        //}
+        //if (Input.GetKeyUp(KeyCode.J))
+        //{
+        //    attackHoldTimer = 0;
+        //}
+        //if (attackHoldTimer > attackHoldTime && combo >= 2 && combo <= 3 && canAttack)
+        //{
+        //    Debug.Log("长按生效了" + combo);
+        //    GameObject _nearestEnemy = GetNearestEnemy();
+        //    if (_nearestEnemy)
+        //    {
+        //        Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
+        //        _tmp.y = 0;
+        //        transform.forward = _tmp;
+        //    }
+        //    else if (IsMovePressed())
+        //    {
+        //        transform.forward = moveDirection;
+        //    }
+        //    attackHoldTimer = 0;
+        //    attackType = 2;
+        //    combo += 1;
+        //    animator.SetBool(attack_id, true);
+        //    animator.SetInteger(combo_id, combo);
+        //    animator.SetInteger(attack_type_id, attackType);
+        //    attackPressed = false;
+        //    attackPreTime = 0;
+        //    canAttack = false;
+        //    canMove = false;
+        //}
         if (attackPressed)
         {
             attackPreTime += Time.deltaTime;
@@ -264,9 +279,9 @@ public class PlayerController : Singleton<PlayerController>
                     transform.forward = moveDirection;
                 }
                 combo += 1;
-                animator.SetBool(attack_id, true);
-                animator.SetInteger(combo_id, combo);
                 animator.SetInteger(attack_type_id, attackType);
+                animator.SetInteger(combo_id, combo);
+                animator.SetBool(attack_id, true);
                 attackPressed = false;
                 attackPreTime = 0;
                 canAttack = false;
@@ -283,14 +298,6 @@ public class PlayerController : Singleton<PlayerController>
             attackPressed = false;
             attackPreTime = 0;
         }
-    }
-
-
-
-
-    void CanAttack()
-    {
-        canAttack = true;
     }
     #endregion
 
@@ -363,19 +370,19 @@ public class PlayerController : Singleton<PlayerController>
     #region 声音
     void PlaySound()
     {
-        try
-        {
-            if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Run" && effectSound.clip != effectSound_Run)
-            {
-                effectSound.clip = effectSound_Run;
-                effectSound.Play();
-            }
-            if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "Run" && effectSound.clip == effectSound_Run)
-            {
-                effectSound.clip = effectSound_Attack_01;
-            }
-        }
-        finally { }
+        //try
+        //{
+        //    if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Run" && effectSound.clip != effectSound_Run)
+        //    {
+        //        effectSound.clip = effectSound_Run;
+        //        effectSound.Play();
+        //    }
+        //    if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "Run" && effectSound.clip == effectSound_Run)
+        //    {
+        //        effectSound.clip = effectSound_Attack_01;
+        //    }
+        //}
+        //finally { }
     }
 
     void AnimEvt_PlayEffectSound(string sound_name)
@@ -480,6 +487,31 @@ public class PlayerController : Singleton<PlayerController>
     #endregion
 
     #region 动画事件
+
+    private void AnimEvt_MoveClose()
+    {
+        canMove = false;
+    }
+    private void AnimEvt_MoveOpen()
+    {
+        canMove = true;
+    }
+    private void AnimEvt_AttackClose()
+    {
+        canAttack = false;
+    }
+    private void AnimEvt_AttackOpen()
+    {
+        canAttack = true;
+    }
+    private void AnimEvt_EvadeClose()
+    {
+        canEvade = false;
+    }
+    private void AnimEvt_EvadeOpen()
+    {
+        canEvade = true;
+    }
     void AnimEvt_EvadeFinished()
     {
         Debug.Log("闪避结束");
@@ -488,7 +520,6 @@ public class PlayerController : Singleton<PlayerController>
         canEvade = true;
         attackPressed = false;
         attackPreTime = 0;
-        AnimEvt_ComboFinished();
     }
     void AnimEvt_SkillFinished()
     {
@@ -519,14 +550,6 @@ public class PlayerController : Singleton<PlayerController>
         }
         impulseSource_01.GenerateImpulse();
     }
-    void AnimEvt_Skill_01()
-    {
-
-    }
-    void AnimEvt_Skill_02()
-    {
-
-    }
 
     void AnimEvt_TimeToSwitch(int is_all_combo_finish) // 可以接下一段攻击了
     {
@@ -534,7 +557,7 @@ public class PlayerController : Singleton<PlayerController>
         {
             combo = 0;
         }
-        CanAttack();
+        canAttack = true;
     }
 
     void AnimEvt_SwitchAttackType() // 废弃
@@ -549,7 +572,7 @@ public class PlayerController : Singleton<PlayerController>
         animator.SetBool(attack_id, false);
         animator.SetInteger(combo_id, combo);
         animator.SetInteger(attack_type_id, attackType);
-        CanAttack();
+        canAttack = true;
         Attack();
         canMove = true;
     }
