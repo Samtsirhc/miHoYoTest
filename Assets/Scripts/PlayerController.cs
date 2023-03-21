@@ -114,8 +114,9 @@ public class PlayerController : Singleton<PlayerController>
         }
         if (Input.GetKeyDown(KeyCode.K))
         {
-            if (IsMovePressed())
-            {
+            //if (IsMovePressed()) 关闭向前闪避
+            if (false)
+                {
                 Debug.Log("向前闪避！");
                 moveDirection = Vector3.zero;
                 if (Input.GetKey(KeyCode.W))
@@ -151,16 +152,7 @@ public class PlayerController : Singleton<PlayerController>
         }
     }
 
-    void AnimEvt_EvadeFinished()
-    {
-        Debug.Log("闪避结束");
-        canMove = true;
-        canAttack = true;
-        canEvade = true;
-        attackPressed = false;
-        attackPreTime = 0;
-        AnimEvt_ComboFinished();
-    }
+
 
     #endregion
 
@@ -217,13 +209,7 @@ public class PlayerController : Singleton<PlayerController>
         }
     }
 
-    void AnimEvt_SkillFinished()
-    {
-        canAttack = true;
-        canMove = true;
-        canEvade = true;
-        canSkill = true;
-    }
+
 
     void Attack()
     {
@@ -298,58 +284,9 @@ public class PlayerController : Singleton<PlayerController>
             attackPreTime = 0;
         }
     }
-    void AnimEvt_AttackDamage(int index)
-    {
-        switch (index)
-        {
-            case 1:
-                damageZone_01.SetActive(true);
-                break;
-            case 2:
-                damageZone_02.SetActive(true);
-                break;
-            case 3:
-                damageZone_03.SetActive(true);
-                break;
-            case 4:
-                damageZone_04.SetActive(true);
-                break;
-            default:
-                break;
-        }
-        impulseSource_01.GenerateImpulse();
-    }
-    void AnimEvt_Skill_01()
-    {
 
-    }
-    void AnimEvt_Skill_02()
-    {
 
-    }
 
-    void AnimEvt_TimeToSwitch()
-    {
-        CanAttack();
-    }
-
-    void AnimEvt_SwitchAttackType()
-    {
-        attackType = 2;
-    }
-
-    void AnimEvt_ComboFinished()
-    {
-        //Debug.Log("结束连招！"  + combo);
-        combo = 0;
-        attackType = 1;
-        animator.SetBool(attack_id, false);
-        animator.SetInteger(combo_id, combo);
-        animator.SetInteger(attack_type_id, attackType);
-        CanAttack();
-        Attack();
-        canMove = true;
-    }
 
     void CanAttack()
     {
@@ -540,5 +477,81 @@ public class PlayerController : Singleton<PlayerController>
         StartCoroutine(SlowUpdate());
     }
 
+    #endregion
+
+    #region 动画事件
+    void AnimEvt_EvadeFinished()
+    {
+        Debug.Log("闪避结束");
+        canMove = true;
+        canAttack = true;
+        canEvade = true;
+        attackPressed = false;
+        attackPreTime = 0;
+        AnimEvt_ComboFinished();
+    }
+    void AnimEvt_SkillFinished()
+    {
+        canAttack = true;
+        canMove = true;
+        canEvade = true;
+        canSkill = true;
+    }
+    void AnimEvt_AttackDamage(int index)
+    {
+        Debug.Log("Damage!");
+        switch (index)
+        {
+            case 1:
+                damageZone_01.SetActive(true);
+                break;
+            case 2:
+                damageZone_02.SetActive(true);
+                break;
+            case 3:
+                damageZone_03.SetActive(true);
+                break;
+            case 4:
+                damageZone_04.SetActive(true);
+                break;
+            default:
+                break;
+        }
+        impulseSource_01.GenerateImpulse();
+    }
+    void AnimEvt_Skill_01()
+    {
+
+    }
+    void AnimEvt_Skill_02()
+    {
+
+    }
+
+    void AnimEvt_TimeToSwitch(int is_all_combo_finish) // 可以接下一段攻击了
+    {
+        if (is_all_combo_finish != 0)
+        {
+            combo = 0;
+        }
+        CanAttack();
+    }
+
+    void AnimEvt_SwitchAttackType() // 废弃
+    {
+        attackType = 2;
+    }
+    void AnimEvt_ComboFinished()
+    {
+        //Debug.Log("结束连招！"  + combo);
+        combo = 0;
+        attackType = 1;
+        animator.SetBool(attack_id, false);
+        animator.SetInteger(combo_id, combo);
+        animator.SetInteger(attack_type_id, attackType);
+        CanAttack();
+        Attack();
+        canMove = true;
+    }
     #endregion
 }
