@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Player : Unit
 {
+    public List<GameObject> damageZones;
     #region 核力与上下限，矢量晶体
     public bool flagForBreak = false;   // 引力破碎标记
     public float nuclearValue
@@ -82,14 +83,15 @@ public class Player : Unit
 
     }
 
-    public void CreateDamageZone()
-    {
-
-    }
     public override void Die()
     {
         base.Die();
     }
+    public override void AnimEvt_AttackDamage(int index)
+    {
+        base.AnimEvt_AttackDamage(index);
+        CreatDamageZone(damageZones[index]);
 
+    }
 
 }
