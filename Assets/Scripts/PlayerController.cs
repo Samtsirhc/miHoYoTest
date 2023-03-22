@@ -276,7 +276,7 @@ public class PlayerController : Singleton<PlayerController>
                 }
                 else if (IsMovePressed())
                 {
-                    transform.forward = moveDirection;
+                    transform.forward = moveDirection;  // 按照移动方向变化角色方向
                 }
                 combo += 1;
                 animator.SetInteger(attack_type_id, attackType);
@@ -333,6 +333,17 @@ public class PlayerController : Singleton<PlayerController>
         if (animator.GetBool(attack_id))
         {
             return;
+        }
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            if (moveSpeed <= 2.1f)
+            {
+                moveSpeed = 5f;
+            }
+            else
+            {
+                moveSpeed = 2f;
+            }
         }
         if (IsMovePressed() && canMove)
         {
@@ -490,15 +501,30 @@ public class PlayerController : Singleton<PlayerController>
 
     private void AnimEvt_MoveClose()
     {
+        Debug.Log("关闭移动");
         canMove = false;
     }
     private void AnimEvt_MoveOpen()
     {
+        Debug.Log("打开移动");
         canMove = true;
+    }
+    private void AnimEvt_SetCombo(int combo)
+    {
+        Debug.Log("设置combo " + combo);
+        this.combo = combo;
+    }
+    private void AnimEvt_ResetEveryThing()
+    {
+        canMove = true;
+        canAttack = true;
+        canEvade = true;
+        combo = 0;
     }
     private void AnimEvt_AttackClose()
     {
         canAttack = false;
+        animator.SetBool(attack_id, false);
     }
     private void AnimEvt_AttackOpen()
     {
@@ -511,15 +537,6 @@ public class PlayerController : Singleton<PlayerController>
     private void AnimEvt_EvadeOpen()
     {
         canEvade = true;
-    }
-    void AnimEvt_EvadeFinished()
-    {
-        Debug.Log("闪避结束");
-        canMove = true;
-        canAttack = true;
-        canEvade = true;
-        attackPressed = false;
-        attackPreTime = 0;
     }
     void AnimEvt_SkillFinished()
     {

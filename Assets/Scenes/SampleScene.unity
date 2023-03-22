@@ -3899,7 +3899,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyList: []
   impulseSource_01: {fileID: 1446983917}
-  moveSpeed: 5
+  moveSpeed: 2
   turnSpeed: 50
   preinputTime: 0.35
   skillCd: 20
@@ -3911,7 +3911,6 @@ MonoBehaviour:
   damageZone_03: {fileID: 1153013849}
   damageZone_04: {fileID: 772224555}
   moveDirection: {x: 0, y: 0, z: 0}
-  attackHoldTime: 0.3
   girlSound: {fileID: 1446983913}
   effectSound: {fileID: 1446983912}
   girlSound_01_01: {fileID: 8300000, guid: 2a8d5b300f7e73b428eac144f0b410b7, type: 3}
@@ -3927,6 +3926,8 @@ MonoBehaviour:
   effectSound_Attack_05: {fileID: 8300000, guid: bc1b5bf259d800f41849f0eaa25a48f6, type: 3}
   effectSound_Run: {fileID: 8300000, guid: af099e7717f9596459a6ae7341e5d100, type: 3}
   effectSound_Evade: {fileID: 8300000, guid: 7783c0b90b29fae4fa9ba2014967984b, type: 3}
+  attackHoldTime: 0.3
+  evadeAttackTime: 1
   isSkillCd: 1
 --- !u!82 &1446983912
 AudioSource:
