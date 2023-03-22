@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
+using StarterAssets;
+using UnityEngine.InputSystem;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -18,34 +20,31 @@ public class PlayerController : Singleton<PlayerController>
 
     private float evadeTimer;
 
+    [Header("相机和Cinemachine、输入")]
     public GameObject myCamera;
+    public GameObject cinemachineCameraTarget;
+    [Tooltip("你可以把摄像机往上移动多少度 ")]
+    public float TopClamp = 70.0f;
+    [Tooltip("你可以把摄像机往下移动多少度 ")]
+    public float BottomClamp = -30.0f;
+    [Tooltip("额外的角度覆盖摄像头。 锁定时微调相机位置有用")]
+    public float CameraAngleOverride = 0.0f;
+    [Tooltip("锁住相机")]
+    public bool LockCameraPosition = false;
+    private StarterAssetsInputs _input;
+    private CharacterController _controller;
+    private PlayerInput _playerInput;
+    private const float _threshold = 0.01f;
 
+    private bool IsCurrentDeviceMouse = true;
 
-    public GameObject damageZone_01;
-    public GameObject damageZone_02;
-    public GameObject damageZone_03;
-    public GameObject damageZone_04;
+    // cinemachine
+    private float _cinemachineTargetYaw;
+    private float _cinemachineTargetPitch;
 
     public Vector3 moveDirection;
 
 
-    #region 声音文件
-    public AudioSource girlSound;
-    public AudioSource effectSound;
-    public AudioClip girlSound_01_01;
-    public AudioClip girlSound_01_02;
-    public AudioClip girlSound_01_03;
-    public AudioClip girlSound_01_04;
-    public AudioClip girlSound_01_05;
-    public AudioClip girlSound_02_03;
-    public AudioClip girlSound_02_04;
-    public AudioClip effectSound_Attack_01;
-    public AudioClip effectSound_Attack_02;
-    public AudioClip effectSound_Attack_04;
-    public AudioClip effectSound_Attack_05;
-    public AudioClip effectSound_Run;
-    public AudioClip effectSound_Evade;
-    #endregion
 
     #region 攻击参数
     private bool attackPressed;
@@ -63,6 +62,8 @@ public class PlayerController : Singleton<PlayerController>
     private bool canAttack = true;
     private bool canEvade = true;
     private bool canSkill = true;
+    private bool canBurst = false;
+    private bool canSpAttack = false;
     public bool isSkillCd = true;
     #endregion
 
@@ -80,9 +81,12 @@ public class PlayerController : Singleton<PlayerController>
     private int evade_backward_id = Animator.StringToHash("evade_backward");
     private int evade_forward_id = Animator.StringToHash("evade_forward");
     private int skill_id = Animator.StringToHash("skill");
+    private int burst_id = Animator.StringToHash("burst_attack");
+    private int sp_attack_id = Animator.StringToHash("sp_attack");
+    private int start_sp_attack_id = Animator.StringToHash("start_sp_attack");
     #endregion
 
-    #region 脚本函数
+    #region Unity函数
     protected override void Awake()
     {
         base.Awake();
@@ -94,15 +98,23 @@ public class PlayerController : Singleton<PlayerController>
         skillCdTimer = 0;
         isSkillCd = true;
     }
-
+    private void Start()
+    {
+        InitInputAndCamera();
+    }
     // Update is called once per frame
     void Update()
     {
-        Skill();
+        SpAttack();
+        BurstAttack();
         Evade();
         Movement();
         Attack();
         PlaySound();
+    }
+    private void LateUpdate()
+    {
+        CameraRotation();
     }
     #endregion
 
@@ -191,33 +203,34 @@ public class PlayerController : Singleton<PlayerController>
     #endregion
 
     #region 攻击
-    void Skill()
+    void BurstAttack()
     {
-        if (skillCdTimer <= 0)
+        //if (!canBurst)
+        //{
+        //    return;
+        //}
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            isSkillCd = true;
-        }
-        if (!isSkillCd)
-        {
-            skillCdTimer -= Time.deltaTime;
-        }
-        if (!isSkillCd || !canSkill)
-        {
-            return;
-        }
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            animator.SetTrigger(skill_id);
-            canAttack = false;
-            canMove = false;
-            canEvade = false;
-            canSkill = false;
-            isSkillCd = false;
-            skillCdTimer = skillCd;
+            animator.SetTrigger(burst_id);
         }
     }
 
-
+    void SpAttack()
+    {
+        //if (!canSpAttack)
+        //{
+        //    return;
+        //}
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            animator.SetTrigger(start_sp_attack_id);
+            animator.SetBool(sp_attack_id, true);
+        }
+        if (Input.GetKeyUp(KeyCode.Q))
+        {
+            animator.SetBool(sp_attack_id, false);
+        }
+    }
 
     void Attack()
     {
@@ -276,7 +289,8 @@ public class PlayerController : Singleton<PlayerController>
                 }
                 else if (IsMovePressed())
                 {
-                    transform.forward = moveDirection;  // 按照移动方向变化角色方向
+                    StartCoroutine(IE_TrunSmooth(moveDirection, 0.02f));    // 丝滑转向
+                    //transform.forward = moveDirection;  // 按照移动方向变化角色方向
                 }
                 combo += 1;
                 animator.SetInteger(attack_type_id, attackType);
@@ -306,6 +320,17 @@ public class PlayerController : Singleton<PlayerController>
     void TrunSmooth(Vector3 target) 
     {
         transform.forward += (target - transform.forward) * turnSpeed * Time.deltaTime;
+    }
+
+    IEnumerator IE_TrunSmooth(Vector3 target, float delta_time)
+    {
+        transform.forward += (target - transform.forward) * turnSpeed * delta_time;
+        float _dif = (target - transform.forward).magnitude;
+        yield return new WaitForSeconds(delta_time);
+        if (_dif <= 0.01f)
+        {
+            IE_TrunSmooth(target, delta_time);
+        }
     }
 
     void Movement()
@@ -369,12 +394,49 @@ public class PlayerController : Singleton<PlayerController>
         }
         return false;
     }
+    public Vector3 cameraDirection;
     Vector3 GetCameraDirection()
     {
         Vector3 _directon;
-        _directon = transform.position - myCamera.transform.position;
+        //_directon = transform.position - myCamera.transform.position;
+        _directon = myCamera.transform.forward;
+        cameraDirection = myCamera.transform.forward;
         _directon.y = 0;
         return _directon.normalized;
+    }
+    void InitInputAndCamera()
+    {
+        _cinemachineTargetYaw = cinemachineCameraTarget.transform.rotation.eulerAngles.y;
+        _controller = GetComponent<CharacterController>();
+        _input = GetComponent<StarterAssetsInputs>();
+        _playerInput = GetComponent<PlayerInput>();
+    }
+    private void CameraRotation()
+    {
+        // if there is an input and camera position is not fixed
+        if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
+        {
+            //Don't multiply mouse input by Time.deltaTime;
+            float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
+            Debug.Log("x: " + _input.look.x);
+            Debug.Log("y: " + _input.look.x);
+            _cinemachineTargetYaw += _input.look.x * deltaTimeMultiplier;
+            _cinemachineTargetPitch += _input.look.y * deltaTimeMultiplier;
+        }
+
+        // clamp our rotations so our values are limited 360 degrees
+        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
+        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+
+        // Cinemachine will follow this target
+        cinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
+            _cinemachineTargetYaw, 0.0f);
+    }
+    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+    {
+        if (lfAngle < -360f) lfAngle += 360f;
+        if (lfAngle > 360f) lfAngle -= 360f;
+        return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
     #endregion
 
@@ -398,58 +460,12 @@ public class PlayerController : Singleton<PlayerController>
 
     void AnimEvt_PlayEffectSound(string sound_name)
     {
-        switch (sound_name)
-        {
-            case "effectSound_Evade":
-                effectSound.clip = effectSound_Evade;
-                break;
-            case "effectSound_Attack_01":
-                effectSound.clip = effectSound_Attack_01;
-                break;
-            case "effectSound_Attack_02":
-                effectSound.clip = effectSound_Attack_02;
-                break;
-            case "effectSound_Attack_04":
-                effectSound.clip = effectSound_Attack_04;
-                break;
-            case "effectSound_Attack_05":
-                effectSound.clip = effectSound_Attack_05;
-                break;
-            default:
-                break;
-        }
-        effectSound.Play();
+
     }
 
     void AnimEvt_PlayGirlSound(string sound_name)
     {
-        switch (sound_name)
-        {
-            case "girlSound_01_01":
-                girlSound.clip = girlSound_01_01;
-                break;
-            case "girlSound_01_02":
-                girlSound.clip = girlSound_01_02;
-                break;
-            case "girlSound_01_03":
-                girlSound.clip = girlSound_01_03;
-                break;
-            case "girlSound_01_04":
-                girlSound.clip = girlSound_01_04;
-                break;
-            case "girlSound_01_05":
-                girlSound.clip = girlSound_01_05;
-                break;
-            case "girlSound_02_03":
-                girlSound.clip = girlSound_02_03;
-                break;
-            case "girlSound_02_04":
-                girlSound.clip = girlSound_02_04;
-                break;
-            default:
-                break;
-        }
-        girlSound.Play();
+
     }
     #endregion
 
@@ -548,24 +564,6 @@ public class PlayerController : Singleton<PlayerController>
     void AnimEvt_AttackDamage(int index)
     {
         Debug.Log("Damage!");
-        switch (index)
-        {
-            case 1:
-                damageZone_01.SetActive(true);
-                break;
-            case 2:
-                damageZone_02.SetActive(true);
-                break;
-            case 3:
-                damageZone_03.SetActive(true);
-                break;
-            case 4:
-                damageZone_04.SetActive(true);
-                break;
-            default:
-                break;
-        }
-        impulseSource_01.GenerateImpulse();
     }
 
     void AnimEvt_TimeToSwitch(int is_all_combo_finish) // 可以接下一段攻击了
