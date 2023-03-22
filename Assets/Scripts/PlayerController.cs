@@ -20,29 +20,7 @@ public class PlayerController : Singleton<PlayerController>
 
     private float evadeTimer;
 
-    [Header("相机和Cinemachine、输入")]
-    public GameObject myCamera;
-    public GameObject cinemachineCameraTarget;
-    [Tooltip("你可以把摄像机往上移动多少度 ")]
-    public float TopClamp = 70.0f;
-    [Tooltip("你可以把摄像机往下移动多少度 ")]
-    public float BottomClamp = -30.0f;
-    [Tooltip("额外的角度覆盖摄像头。 锁定时微调相机位置有用")]
-    public float CameraAngleOverride = 0.0f;
-    [Tooltip("锁住相机")]
-    public bool LockCameraPosition = false;
-    private StarterAssetsInputs _input;
-    private CharacterController _controller;
-    private PlayerInput _playerInput;
-    private const float _threshold = 0.01f;
 
-    private bool IsCurrentDeviceMouse = true;
-
-    // cinemachine
-    private float _cinemachineTargetYaw;
-    private float _cinemachineTargetPitch;
-
-    public Vector3 moveDirection;
 
 
 
@@ -110,6 +88,7 @@ public class PlayerController : Singleton<PlayerController>
         Evade();
         Movement();
         Attack();
+        Lock();
         PlaySound();
     }
     private void LateUpdate()
@@ -240,40 +219,6 @@ public class PlayerController : Singleton<PlayerController>
         {
             attackType = 1;
         }
-        // 废弃长按连招分支
-        //if (Input.GetKey(KeyCode.J))
-        //{
-        //    attackHoldTimer += Time.deltaTime;
-        //}
-        //if (Input.GetKeyUp(KeyCode.J))
-        //{
-        //    attackHoldTimer = 0;
-        //}
-        //if (attackHoldTimer > attackHoldTime && combo >= 2 && combo <= 3 && canAttack)
-        //{
-        //    Debug.Log("长按生效了" + combo);
-        //    GameObject _nearestEnemy = GetNearestEnemy();
-        //    if (_nearestEnemy)
-        //    {
-        //        Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
-        //        _tmp.y = 0;
-        //        transform.forward = _tmp;
-        //    }
-        //    else if (IsMovePressed())
-        //    {
-        //        transform.forward = moveDirection;
-        //    }
-        //    attackHoldTimer = 0;
-        //    attackType = 2;
-        //    combo += 1;
-        //    animator.SetBool(attack_id, true);
-        //    animator.SetInteger(combo_id, combo);
-        //    animator.SetInteger(attack_type_id, attackType);
-        //    attackPressed = false;
-        //    attackPreTime = 0;
-        //    canAttack = false;
-        //    canMove = false;
-        //}
         if (attackPressed)
         {
             attackPreTime += Time.deltaTime;
@@ -291,6 +236,12 @@ public class PlayerController : Singleton<PlayerController>
                 {
                     StartCoroutine(IE_TrunSmooth(moveDirection, 0.02f));    // 丝滑转向
                     //transform.forward = moveDirection;  // 按照移动方向变化角色方向
+                }
+                if (lockTarget != null)
+                {
+                    // 锁定时选择锁定的目标攻击
+                    moveDirection = lockTarget.transform.position - transform.position;
+                    StartCoroutine(IE_TrunSmooth(moveDirection, 0.02f));
                 }
                 combo += 1;
                 animator.SetInteger(attack_type_id, attackType);
@@ -316,12 +267,36 @@ public class PlayerController : Singleton<PlayerController>
     #endregion
 
     #region 移动和摄像机
+    [Header("相机和Cinemachine、输入")]
+    public GameObject myCamera;
+    public CinemachineVirtualCamera virtualCamera_01;
+    public CinemachineVirtualCamera virtualCamera_02;
+    public GameObject cinemachineCameraTarget;
+    [Tooltip("你可以把摄像机往上移动多少度 ")]
+    public float TopClamp = 70.0f;
+    [Tooltip("你可以把摄像机往下移动多少度 ")]
+    public float BottomClamp = -10.0f;
+    [Tooltip("额外的角度覆盖摄像头。 锁定时微调相机位置有用")]
+    public float CameraAngleOverride = 0.0f;
+    [Tooltip("锁住相机")]
+    public bool LockCameraPosition = false;
+    public LockTarget lockTarget;
+    private StarterAssetsInputs _input;
+    private CharacterController _controller;
+    private PlayerInput _playerInput;
+    private const float _threshold = 0.01f;
+    private bool IsCurrentDeviceMouse = true;
 
+    // cinemachine
+    private float _cinemachineTargetYaw;
+    private float _cinemachineTargetPitch;
+
+
+    public Vector3 moveDirection;
     void TrunSmooth(Vector3 target) 
     {
         transform.forward += (target - transform.forward) * turnSpeed * Time.deltaTime;
     }
-
     IEnumerator IE_TrunSmooth(Vector3 target, float delta_time)
     {
         transform.forward += (target - transform.forward) * turnSpeed * delta_time;
@@ -385,7 +360,6 @@ public class PlayerController : Singleton<PlayerController>
             animator.SetFloat(move_speed_id, 0);
         }
     }
-
     bool IsMovePressed()
     {
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A))
@@ -413,6 +387,11 @@ public class PlayerController : Singleton<PlayerController>
     }
     private void CameraRotation()
     {
+        if (lockTarget != null)
+        {
+
+            return;
+        }
         // if there is an input and camera position is not fixed
         if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
         {
@@ -437,6 +416,35 @@ public class PlayerController : Singleton<PlayerController>
         if (lfAngle < -360f) lfAngle += 360f;
         if (lfAngle > 360f) lfAngle -= 360f;
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
+    }
+    private void Lock()
+    {
+        if (Input.GetMouseButtonDown(2))
+        {
+            if (lockTarget != null)
+            {
+                lockTarget = null;
+                virtualCamera_01.LookAt = null;
+                virtualCamera_01.gameObject.SetActive(true);
+                virtualCamera_02.LookAt = null;
+                virtualCamera_02.gameObject.SetActive(false);
+            }
+            else
+            {
+                if (BattleManager.Instance.lockTargets.Count > 0)
+                {
+                    lockTarget = BattleManager.Instance.lockTargets[0];
+                }
+                else
+                {
+                    return;
+                }
+                virtualCamera_01.gameObject.SetActive(false);
+                virtualCamera_02.gameObject.SetActive(true);
+                virtualCamera_02.LookAt = lockTarget.gameObject.transform;
+                moveSpeed = 2;
+            }
+        }
     }
     #endregion
 
