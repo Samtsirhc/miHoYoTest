@@ -20,6 +20,8 @@ public class PlayerController : Singleton<PlayerController>
 
     private float evadeTimer;
 
+    private Player player => GetComponent<Player>();
+
 
 
 
@@ -191,6 +193,7 @@ public class PlayerController : Singleton<PlayerController>
         if (Input.GetKeyDown(KeyCode.E))
         {
             animator.SetTrigger(burst_id);
+            player.BurstAttack();
         }
     }
 
@@ -225,14 +228,14 @@ public class PlayerController : Singleton<PlayerController>
             if (canAttack)
             {
                 //Debug.Log("应用攻击！" + combo);
-                GameObject _nearestEnemy = GetNearestEnemy();
-                if (_nearestEnemy)
-                {
-                    Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
-                    _tmp.y = 0;
-                    transform.forward = _tmp;
-                }
-                else if (IsMovePressed())
+                //GameObject _nearestEnemy = GetNearestEnemy();
+                //if (_nearestEnemy)
+                //{
+                //    Vector3 _tmp = _nearestEnemy.transform.position - transform.position;
+                //    _tmp.y = 0;
+                //    transform.forward = _tmp;
+                //}
+                if (IsMovePressed())
                 {
                     StartCoroutine(IE_TrunSmooth(moveDirection, 0.02f));    // 丝滑转向
                     //transform.forward = moveDirection;  // 按照移动方向变化角色方向
@@ -241,6 +244,7 @@ public class PlayerController : Singleton<PlayerController>
                 {
                     // 锁定时选择锁定的目标攻击
                     moveDirection = lockTarget.transform.position - transform.position;
+                    moveDirection.y = 0;
                     StartCoroutine(IE_TrunSmooth(moveDirection, 0.02f));
                 }
                 combo += 1;
@@ -398,8 +402,6 @@ public class PlayerController : Singleton<PlayerController>
         {
             //Don't multiply mouse input by Time.deltaTime;
             float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-            Debug.Log("x: " + _input.look.x);
-            Debug.Log("y: " + _input.look.x);
             _cinemachineTargetYaw += _input.look.x * deltaTimeMultiplier;
             _cinemachineTargetPitch += _input.look.y * deltaTimeMultiplier;
         }

@@ -9,7 +9,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 863525243591740890, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: m_Name
-      value: DamageZone
+      value: "\u666E\u653B"
       objectReference: {fileID: 0}
     - target: {fileID: 1225825989517285471, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: initPos.y
@@ -18,6 +18,14 @@ PrefabInstance:
     - target: {fileID: 1225825989517285471, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: initPos.z
       value: 0.84
+      objectReference: {fileID: 0}
+    - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
+      propertyPath: basicFakeDamage
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
+      propertyPath: getNuclearValue
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 5366875807975188621, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: m_RootOrder

@@ -31,6 +31,7 @@ public class Unit :MonoBehaviour
     #endregion
 
     #region 战斗事件
+    public virtual void Init() { }
     public virtual void Die() { }
     #endregion
 
@@ -41,7 +42,13 @@ public class Unit :MonoBehaviour
     public void CreatDamageZone(GameObject pfb)
     {
         GameObject obj = Instantiate(pfb, transform);
-        obj.GetComponent<Damage>().sourceUnit = this;
+        obj.GetComponent<Damage>().Init(this, 0);
+        obj.GetComponent<DamageZone>().Init();
+    }
+    public void CreatDamageZone(GameObject pfb, float nuclear_v)
+    {
+        GameObject obj = Instantiate(pfb, transform);
+        obj.GetComponent<Damage>().Init(this, nuclear_v);
         obj.GetComponent<DamageZone>().Init();
     }
     #endregion

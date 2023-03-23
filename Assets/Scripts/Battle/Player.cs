@@ -5,8 +5,15 @@ using UnityEngine;
 public class Player : Unit
 {
     public List<GameObject> damageZones;
+
+    #region Unity函数
+    private void Start()
+    {
+        BattleManager.Instance.player = this;
+    }
+    #endregion
+
     #region 核力与上下限，矢量晶体
-    public bool flagForBreak = false;   // 引力破碎标记
     public float nuclearValue
     {
         get => _nuclearValue;
@@ -15,17 +22,11 @@ public class Player : Unit
             if (value >= nuclearValueUpperLimit)
             {
                 _nuclearValue = nuclearValueUpperLimit;
-                if (flagForBreak)
-                {
-                    GravitationBreak();
-                    return;
-                }
             }
             else
             {
                 _nuclearValue = value;
             }
-            flagForBreak = false;   // 每次Set完，把标记取消掉
             return;
         }
     }
@@ -52,7 +53,7 @@ public class Player : Unit
     }
     private float _nuclearValueUpperLimit = 1000f;
 
-    public float nuclearValueLowerLimit = 300f;
+    public float nuclearValueLowerLimit = 0f;
 
     public int vectorCrystalNum
     {
@@ -66,9 +67,14 @@ public class Player : Unit
             }
         }
     }
-    private int _vectorCrystalNum;
+    private int _vectorCrystalNum = 3;
     #endregion
 
+    #region 战斗相关
+    public override void Init()
+    {
+        base.Init();
+    }
     public override void TakeDamage(Damage damage)
     {
         base.TakeDamage(damage);
@@ -76,7 +82,6 @@ public class Player : Unit
 
     public void GravitationBreak()  // 引力破碎，恢复上限，清空核力，晶体数量减少
     {
-        flagForBreak = false;
         nuclearValueUpperLimit = 1000f;
         nuclearValue = 0;
         vectorCrystalNum -= 1;
@@ -87,11 +92,30 @@ public class Player : Unit
     {
         base.Die();
     }
+    public void BurstAttack()
+    {
+        consumeNuclearTime = 2;
+        nuclearValueToUse = nuclearValue;
+        nuclearValue = 0;
+    }
+    public int consumeNuclearTime = 0;
+    public float nuclearValueToUse = 0f;
+    #endregion
+
+    #region 动画事件
     public override void AnimEvt_AttackDamage(int index)
     {
         base.AnimEvt_AttackDamage(index);
-        CreatDamageZone(damageZones[index]);
-
+        if (consumeNuclearTime > 0)
+        {
+            consumeNuclearTime -= 1;
+            CreatDamageZone(damageZones[index], nuclearValueToUse);
+        }
+        else
+        {
+            CreatDamageZone(damageZones[index]);
+        }
     }
+    #endregion
 
 }

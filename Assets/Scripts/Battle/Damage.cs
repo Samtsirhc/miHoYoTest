@@ -8,6 +8,7 @@ public class Damage : MonoBehaviour
     public List<Unit> targetUnits;
 
     public float hitbackForce;  // 击退力量大小
+    public float getNuclearValue;   // 命中时获取核力量
     [HideInInspector]
     public float nuclearValue;  // 本次技能消耗的核力
 
@@ -23,7 +24,8 @@ public class Damage : MonoBehaviour
 
     public int unbalanceLevel;  // 本次伤害失衡值
 
-    public Damage(Unit source_unit, float nuclear_value)
+
+    public void Init(Unit source_unit, float nuclear_value)
     {
         sourceUnit = source_unit;
         nuclearValue = nuclear_value;
