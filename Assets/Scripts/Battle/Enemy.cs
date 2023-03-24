@@ -55,6 +55,7 @@ public class Enemy : Unit
     {
         RecoverFakeHp();
         Move();
+        AIUpdate();
     }
     #endregion
 
@@ -167,7 +168,7 @@ public class Enemy : Unit
     }
 
     // 要替换Clip
-    public AnimationClip clip;
+    public List<AnimationClip> clips;
     public string clip_name = "Die";
 
     [EditorButton]
@@ -178,13 +179,18 @@ public class Enemy : Unit
         {
             layerInfo[i] = animator.GetCurrentAnimatorStateInfo(i);
         }
+        try
+        {
+            AnimatorOverrideController overrideController = new AnimatorOverrideController();
+            overrideController.runtimeAnimatorController = animator.runtimeAnimatorController;
+            overrideController[clip_name] = clip;
 
-        AnimatorOverrideController overrideController = new AnimatorOverrideController();
-        overrideController.runtimeAnimatorController = animator.runtimeAnimatorController;
-        overrideController[clip_name] = clip;
-
-        animator.runtimeAnimatorController = overrideController;
-        animator.Update(0.0f);
+            animator.runtimeAnimatorController = overrideController;
+            animator.Update(0.0f);
+        }
+        catch (System.Exception)
+        {
+        }
         animator.SetTrigger(attack_id);
         for (int i = 0; i < animator.layerCount; i++)
         {
@@ -200,27 +206,156 @@ public class Enemy : Unit
     private bool canAttack = true;
     #endregion
 
-    #region AI相关
+    #region AI相关 都在Fix中使用
     public CharacterController characterController;
-    [Header("AI、运动参数")]
+    [Header("AI控制参数")]
     public float runSpeed = 2;
     public float walkSpeed = 2.5f;
+    public float strategyInterval = 3;
+    public float attackBrainInterval = 3;
     private float moveSpeed;
     private Vector3 moveDirection;
+
     private void Move()
     {
-        moveDirection = player.transform.position - transform.position;
-        moveDirection.y = 0;
-        if (canMove)
-        {
-            moveSpeed = runSpeed;
-        }
-        else
+
+        if (!canMove)
         {
             moveSpeed = 0;
         }
         TrunSmooth(moveDirection.normalized);
         characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+    }
+    [Header("AI显示参数，拒绝修改")]
+    public float disToPlayer;
+    public int curStrategy;
+    private void AIUpdate()
+    {
+        Vector3 _dis = player.transform.position - transform.position;
+        _dis.y = 0;
+        disToPlayer = _dis.magnitude;
+
+        AIStrategy();
+        AIAttackBrain();
+        AIMovement();
+        AIAttack();
+    }
+
+    private float strategyTimer;
+    private void AIStrategy()
+    {
+        strategyTimer -= Time.fixedDeltaTime;
+        if (strategyTimer >= 0)
+        {
+            return;
+        }
+        strategyTimer = strategyInterval;
+        // 0 是进攻 1 是对峙
+    }
+    private void AIMovement()
+    {
+        if (curStrategy == 0)
+        {
+            moveDirection = player.transform.position - transform.position;
+            moveDirection.y = 0;
+            moveSpeed = runSpeed;
+        }
+        if (curStrategy == 1)
+        {
+            moveDirection = player.transform.position - transform.position;
+            moveDirection.y = 0;
+            moveDirection = Vector3.Cross(moveDirection, new Vector3(0, 1, 0));
+            moveSpeed = walkSpeed;
+        }
+    }
+
+    private float attackBrainTimer;
+    private void AIAttackBrain()
+    {
+        attackBrainTimer -= Time.fixedDeltaTime;
+        if (attackBrainTimer >= 0)
+        {
+            return;
+        }
+        attackBrainTimer = attackBrainInterval;
+
+        AddAttackGoal("三连击", 2.5f, 5);
+    }
+    public List<AttackGoal> attackGoals = new List<AttackGoal>();
+    private void AIAttack()
+    {
+        if (canAttack)
+        {
+            foreach (var item in attackGoals)
+            {
+                if (disToPlayer <= item.attackDis)
+                {
+                    Attack(item.clip);
+                    attackGoals.Remove(item);
+                    break;
+                }
+            }
+        }
+        // 清除到时间的
+        foreach (var item in attackGoals)
+        {
+            item.durationTimer -= Time.fixedDeltaTime;
+        }
+        attackGoals.RemoveAll(i => i.durationTimer <= 0);
+    }
+    public void AddAttackGoal(string clip_name, float dis, float duration, int priority = 0)
+    {
+        if (attackGoals.Exists(i => i.name == clip_name))
+        {
+            attackGoals.Find(i => i.name == clip_name).ResetTimer();
+            return;
+        }
+        AnimationClip clip = clips.Find(i => i.name == clip_name);
+        attackGoals.Add(new AttackGoal(clip, dis, duration, priority));
+        attackGoals.Sort((x, y) => -x.Compare(x, y));
+    }
+    private void ClearAttackGoal()
+    {
+        attackGoals = new List<AttackGoal>();
+    }
+    #endregion
+
+    #region AI Attack Goal
+    public class AttackGoal : Comparer<AttackGoal>
+    {
+        public float attackDis;
+        public float duration;
+        public int priority;
+        public float durationTimer;
+        public string name;
+        public AnimationClip clip;
+        
+        public AttackGoal(AnimationClip clip, float dis, float duration, int priority)
+        {
+            this.clip = clip;
+            attackDis = dis;
+            this.duration = duration;
+            durationTimer = duration;
+            this.priority = priority;
+            name = clip.name;
+        }
+        public void ResetTimer()
+        {
+            durationTimer = duration;
+        }
+
+        public override int Compare(AttackGoal x, AttackGoal y)
+        {
+            if (x.priority > y.priority)
+            {
+                return 1;
+            }
+            else if (x.priority == y.priority)
+            {
+                return 0;
+            }
+            return -1;
+        }
     }
     #endregion
 

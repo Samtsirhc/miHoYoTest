@@ -161,6 +161,14 @@ public class PlayerController : Singleton<PlayerController>
     #endregion
 
     #region 受伤
+    public void Hit_L()
+    {
+
+    }
+    public void Hit_H()
+    {
+
+    }
     public void TakeDamage(float damage)
     {
         Debug.Log("打到了！");

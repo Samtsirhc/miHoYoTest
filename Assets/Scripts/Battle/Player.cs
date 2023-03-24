@@ -80,6 +80,12 @@ public class Player : Unit
     public override void TakeDamage(Damage damage)
     {
         base.TakeDamage(damage);
+        nuclearValue += damage.fakeDamage;
+        nuclearValueUpperLimit -= damage.realDamage;
+        if (damage.unbalanceLevel - curBalanceLevel >= 1)
+        {
+            playerController.Hit_L();
+        }
     }
 
     public void GravitationBreak()  // 引力破碎，恢复上限，清空核力，晶体数量减少
@@ -87,6 +93,7 @@ public class Player : Unit
         nuclearValueUpperLimit = 1000f;
         nuclearValue = 0;
         vectorCrystalNum -= 1;
+        playerController.Hit_H();
 
     }
 
