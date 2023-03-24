@@ -26,33 +26,50 @@ public class DamageZone : MonoBehaviour
     {
         transform.localPosition = initPos;
         coll.enabled = true;
+        Destroy(gameObject, 0.1f);
     }
     // Update is called once per frame
     void Update()
     {
-        StartDying();
+
     }
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Enemy" && isPlayerDamageZone)
         {
             Enemy _unit = other.GetComponent<Enemy>();
-            _unit.TakeDamage(damage);
-            Debug.Log(damage.sourceUnit + " 打到了 " + other.gameObject);
+            if (damage.targetUnits.Exists(i => i == _unit))
+            {
+
+            }
+            else
+            {
+                damage.targetUnits.Add(_unit);
+                _unit.TakeDamage(damage);
+                Debug.Log(damage.sourceUnit + " 打到了 " + other.gameObject);
+            }
         }
         if (other.gameObject.tag == "Player" && !isPlayerDamageZone)
         {
             Player _unit = other.GetComponent<Player>();
-            _unit.TakeDamage(damage);
-            Debug.Log(damage.sourceUnit + " 打到了 " + other.gameObject);
+            if (damage.targetUnits.Exists(i => i == _unit))
+            {
+
+            }
+            else
+            {
+                damage.targetUnits.Add(_unit);
+                _unit.TakeDamage(damage);
+                Debug.Log(damage.sourceUnit + " 打到了 " + other.gameObject);
+            }
         }
 
     }
-    IEnumerator DisableSelf()
+    IEnumerator DestroySelf()
     {
         isDying = true;
         yield return new WaitForSeconds(0.1f);
-        gameObject.SetActive(false);
+        Destroy(gameObject);
         isDying = false;
     }
 
@@ -64,7 +81,7 @@ public class DamageZone : MonoBehaviour
         }
         else
         {
-            StartCoroutine(DisableSelf());
+            StartCoroutine(DestroySelf());
         }
     }
     

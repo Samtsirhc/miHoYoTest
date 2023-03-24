@@ -16,9 +16,12 @@ public class PlayerController : Singleton<PlayerController>
     public float preinputTime;
     public float skillCd;
     public float skillCdTimer;
-    public float evadeTime;
 
+    [Header("各种计时器")]
+    public float evadeTime;
     private float evadeTimer;
+    public float burstTime;
+    private float burstTimer;
 
     private Player player => GetComponent<Player>();
 
@@ -88,7 +91,7 @@ public class PlayerController : Singleton<PlayerController>
         SpAttack();
         BurstAttack();
         Evade();
-        Movement();
+        Move();
         Attack();
         Lock();
         PlaySound();
@@ -184,16 +187,29 @@ public class PlayerController : Singleton<PlayerController>
     #endregion
 
     #region 攻击
+    public bool canBurstAttack
+    {
+        get
+        {
+            return canBurst && burstTimer >= 0;
+        }
+    }
     void BurstAttack()
     {
-        //if (!canBurst)
-        //{
-        //    return;
-        //}
+        burstTimer -= Time.deltaTime;
+        if (!canBurst)
+        {
+            return;
+        }
+        if (burstTimer <= 0)
+        {
+            return;
+        }
         if (Input.GetKeyDown(KeyCode.E))
         {
             animator.SetTrigger(burst_id);
             player.BurstAttack();
+            canBurst = false;
         }
     }
 
@@ -269,6 +285,12 @@ public class PlayerController : Singleton<PlayerController>
             attackPreTime = 0;
         }
     }
+
+    public void Clash()
+    {
+        canBurst = true;
+        burstTimer = burstTime;
+    }
     #endregion
 
     #region 移动和摄像机
@@ -313,7 +335,7 @@ public class PlayerController : Singleton<PlayerController>
         }
     }
 
-    void Movement()
+    private void Move()
     {
         if (IsMovePressed())
         {
@@ -356,7 +378,26 @@ public class PlayerController : Singleton<PlayerController>
             animator.SetFloat(move_speed_id, moveSpeed);
             if (canMove)
             {
-                TrunSmooth(moveDirection.normalized);
+                if (lockTarget != null)
+                {
+                    if (Input.GetKey(KeyCode.LeftShift))
+                    {
+                        moveSpeed = 5f;
+                        TrunSmooth(moveDirection.normalized);
+                    }
+                    else
+                    {
+                        moveSpeed = 2f;
+                        Vector3 dir = lockTarget.transform.position - transform.position;
+                        dir.y = 0;
+                        TrunSmooth(dir.normalized);
+                    }
+                }
+                else
+                {
+                    TrunSmooth(moveDirection.normalized);
+                }
+
                 characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
             }
         }

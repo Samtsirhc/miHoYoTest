@@ -31,7 +31,10 @@ public class Unit :MonoBehaviour
     #endregion
 
     #region 战斗事件
-    public virtual void Init() { }
+    public virtual void Init() 
+    {
+        curBalanceLevel = constantBalanceLevel;
+    }
     public virtual void Die() { }
     #endregion
 

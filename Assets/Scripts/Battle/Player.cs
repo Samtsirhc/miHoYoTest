@@ -5,6 +5,8 @@ using UnityEngine;
 public class Player : Unit
 {
     public List<GameObject> damageZones;
+    public float energy;
+    private PlayerController playerController => GetComponent<PlayerController>();
 
     #region Unity函数
     private void Start()
@@ -96,10 +98,25 @@ public class Player : Unit
     {
         consumeNuclearTime = 2;
         nuclearValueToUse = nuclearValue;
+        ConsumeNuclearValue();
+    }
+    public void ConsumeNuclearValue()
+    {
+        nuclearValueUpperLimit += nuclearValue * 0.1f;
+        if (nuclearValueUpperLimit >= 1000)
+        {
+            nuclearValueUpperLimit = 1000;
+        }
+        energy += nuclearValue * 0.35f;
         nuclearValue = 0;
     }
     public int consumeNuclearTime = 0;
     public float nuclearValueToUse = 0f;
+
+    public void Clash()
+    {
+        playerController.Clash();
+    }
     #endregion
 
     #region 动画事件
