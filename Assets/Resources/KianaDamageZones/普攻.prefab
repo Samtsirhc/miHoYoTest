@@ -20,12 +20,16 @@ PrefabInstance:
       value: 0.84
       objectReference: {fileID: 0}
     - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
+      propertyPath: unbalanceLevel
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: basicFakeDamage
-      value: 50
+      value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: getNuclearValue
-      value: 70
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5366875807975188621, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: m_RootOrder

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class Unit :MonoBehaviour
 {
-    public int constantBalanceLevel;
+    [HideInInspector]
+    public int constantBalanceLevel = 0;
     public int curBalanceLevel;
     public virtual void TakeDamage(Damage damage) 
     {

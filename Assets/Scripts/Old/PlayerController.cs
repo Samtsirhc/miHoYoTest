@@ -10,6 +10,7 @@ public class PlayerController : Singleton<PlayerController>
     public List<GameObject> enemyList;
 
     public CinemachineImpulseSource impulseSource_01;
+    public CinemachineImpulseSource impulseSource_02;
 
     public float moveSpeed;
     public float turnSpeed;
@@ -46,8 +47,10 @@ public class PlayerController : Singleton<PlayerController>
     private bool canEvade = true;
     private bool canSkill = true;
     private bool canBurst = false;
-    private bool canSpAttack = false;
+    private bool canSpAttack => player.energy > -1f;
     public bool isSkillCd = true;
+    public bool isInvinciable = false;
+    public bool isSuperArmor = false;
     #endregion
 
     #region 组件
@@ -67,6 +70,8 @@ public class PlayerController : Singleton<PlayerController>
     private int burst_id = Animator.StringToHash("burst_attack");
     private int sp_attack_id = Animator.StringToHash("sp_attack");
     private int start_sp_attack_id = Animator.StringToHash("start_sp_attack");
+    private int hit_id = Animator.StringToHash("hit");
+    private int break_id = Animator.StringToHash("break");
     #endregion
 
     #region Unity函数
@@ -163,19 +168,13 @@ public class PlayerController : Singleton<PlayerController>
     #region 受伤
     public void Hit_L()
     {
-
+        animator.SetBool(attack_id, false);
+        animator.SetTrigger(hit_id);
     }
     public void Hit_H()
     {
-
-    }
-    public void TakeDamage(float damage)
-    {
-        Debug.Log("打到了！");
-        if (evadeTimer < evadeTime)
-        {
-            PrefectEvade();
-        }
+        animator.SetBool(attack_id, false);
+        animator.SetTrigger(break_id);
     }
 
     IEnumerator TimeFreeze(float time)
@@ -199,17 +198,13 @@ public class PlayerController : Singleton<PlayerController>
     {
         get
         {
-            return canBurst && burstTimer >= 0;
+            return canBurst && burstTimer >= 0 && player.nuclearValue >= player.nuclearValueLowerLimit;
         }
     }
     void BurstAttack()
     {
         burstTimer -= Time.deltaTime;
-        if (!canBurst)
-        {
-            return;
-        }
-        if (burstTimer <= 0)
+        if (!canBurstAttack)
         {
             return;
         }
@@ -223,19 +218,45 @@ public class PlayerController : Singleton<PlayerController>
 
     void SpAttack()
     {
-        //if (!canSpAttack)
-        //{
-        //    return;
-        //}
+        if (!canSpAttack)
+        {
+            return;
+        }
         if (Input.GetKeyDown(KeyCode.Q))
         {
             animator.SetTrigger(start_sp_attack_id);
             animator.SetBool(sp_attack_id, true);
+            player.energy = 0;
+            StartCoroutine("AutoEndSpAttack");
         }
         if (Input.GetKeyUp(KeyCode.Q))
         {
             animator.SetBool(sp_attack_id, false);
+            StopCoroutine("AutoEndSpAttack");
         }
+    }
+    public GameObject gravitationField;
+    public Collider gColl
+    {
+        get
+        {
+            if (_gColl == null)
+            {
+                _gColl = gravitationField.GetComponent<Collider>();
+            }
+            return _gColl;
+        }  
+    }
+    private Collider _gColl;
+    void GravitationFieldForce()
+    {
+        
+    }
+    
+    IEnumerator AutoEndSpAttack()
+    {
+        yield return new WaitForSeconds(5);
+        animator.SetBool(sp_attack_id, false);
     }
 
     void Attack()
@@ -614,6 +635,30 @@ public class PlayerController : Singleton<PlayerController>
     {
         canEvade = true;
     }
+
+    private void AnimEvt_InvinciableOpen()
+    {
+        isInvinciable = true;
+    }
+    private void AnimEvt_InvinciableClose()
+    {
+        isInvinciable = false;
+    }
+
+    private void AnimEvt_SuperArmorOpen()
+    {
+        isSuperArmor = true;
+        gravitationField.SetActive(true);
+    }
+    private void AnimEvt_SuperArmorClose()
+    {
+        isSuperArmor = false;
+        gravitationField.SetActive(false);
+    }
+    private void AnimEvt_BurstOpen()
+    {
+        Clash();
+    }
     void AnimEvt_SkillFinished()
     {
         canAttack = true;
@@ -621,6 +666,7 @@ public class PlayerController : Singleton<PlayerController>
         canEvade = true;
         canSkill = true;
     }
+
 
 
     void AnimEvt_TimeToSwitch(int is_all_combo_finish) // 可以接下一段攻击了

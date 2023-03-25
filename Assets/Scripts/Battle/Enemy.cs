@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class Enemy : Unit
 {
-    #region 真假血量 血量恢复
+    #region  属性 真假血量 血量恢复
+    public string name = "示例敌人";
+    [Header("战斗相关")]
     public float maxHp = 1000f;
     public float realHp
     {
@@ -24,6 +26,7 @@ public class Enemy : Unit
     }
     private float _realHp;
 
+    public float fakeToRealRate = 0.5f;
     public float fakeHp
     {
         get => _fakeHp;
@@ -32,6 +35,12 @@ public class Enemy : Unit
             if (value >= realHp)
             {
                 _fakeHp = realHp;
+            }
+            else if (value <= 0)
+            {
+                float v = - value - _fakeHp;
+                realHp -= v * fakeToRealRate;
+                _fakeHp = 0;
             }
             else
             {
@@ -56,11 +65,20 @@ public class Enemy : Unit
         RecoverFakeHp();
         Move();
         AIUpdate();
+        if (weakFlag)
+        {
+            weakObj.SetActive(true);
+        }
+        else
+        {
+            weakObj.SetActive(false);
+        }
     }
     #endregion
 
     #region 战斗相关
     public Player player => BattleManager.Instance.player as Player;
+    public List<GameObject> damageZones;
     public override void Init()
     {
         base.Init();
@@ -82,16 +100,17 @@ public class Enemy : Unit
         recoverTimer = startRecoverTime;
 
         float fake_dmg;
-        if (damage.fakeDamage >= fakeHp)
+        fake_dmg = damage.fakeDamage;
+        if (weakFlag)   // 是否是弱点
         {
-            fake_dmg = fakeHp;
+            fakeHp -= fake_dmg * 1.5f;
+            Debug.Log("结构伤害: " + fake_dmg * 1.5f + " " + damage.sourceUnit + " => " + this);
         }
         else
         {
-            fake_dmg = damage.fakeDamage;
+            fakeHp -= fake_dmg;
+            Debug.Log("结构伤害: " + fake_dmg + " " + damage.sourceUnit + " => " + this);
         }
-        fakeHp -= fake_dmg;
-        Debug.Log("结构伤害: " + fake_dmg + " " + damage.sourceUnit + " => " + this);
 
         float hp_dif = realHp - fakeHp;
         float real_dmg;
@@ -112,14 +131,62 @@ public class Enemy : Unit
         // 判断是否打断
         if (damage.unbalanceLevel - curBalanceLevel >= 10)
         {
-            animator.SetBool(hit_h_id, true);
+            Hit_H();
+        }
+        else if (weakFlag && damage.unbalanceLevel - curBalanceLevel + 10 > 0)
+        {
+            // 处于弱点的时候 可以打断攻击
+            animator.speed = animSpeed;
+            weakFlag = false;
+            Hit_H();
         }
         else if (damage.unbalanceLevel - curBalanceLevel > 0)
         {
-            animator.SetBool(hit_l_id, true);
-            animator.SetTrigger(hit_l_trigger_id);
+            Hit_L();
         }
     }
+    public void HitReact(int level)
+    {
+        if (level - curBalanceLevel > 10)
+        {
+            Hit_H();
+        }
+        else if (level - curBalanceLevel > 0)
+        {
+            Hit_L();
+        }
+    }
+    public void Hit_L()
+    {
+        animator.SetBool(hit_l_id, true);
+        animator.SetTrigger(hit_l_trigger_id);
+        animator.SetBool(is_attack_id, false);
+    }
+    public void Hit_H()
+    {
+        animator.SetBool(hit_h_id, true);
+        animator.SetTrigger(hit_h_trigger_id);
+        animator.SetBool(is_attack_id, false);
+    }
+    public bool weakFlag = false;
+    public float weakDuration = 2f;
+    public GameObject weakObj;
+    public void ShowWeak()
+    {
+        StartCoroutine(SlowDownAnim(0.1f, 1f, 1.5f));
+    }
+    public float animSpeed = 1;
+    IEnumerator SlowDownAnim(float speed, float duration_1, float duration_2)
+    {
+        weakFlag = true;
+        animSpeed = animator.speed;
+        animator.speed = speed;
+        yield return new WaitForSeconds(duration_1);
+        animator.speed = animSpeed;
+        yield return new WaitForSeconds(duration_2 - duration_1);
+        weakFlag = false;
+    }
+
     #endregion
 
     #region 动画参数ID
@@ -128,11 +195,17 @@ public class Enemy : Unit
     private int hit_l_id = Animator.StringToHash("hit_l");
     private int hit_h_id = Animator.StringToHash("hit_h");
     private int hit_l_trigger_id = Animator.StringToHash("hit_l_trigger");
+    private int hit_h_trigger_id = Animator.StringToHash("hit_h_trigger");
     private int die_id = Animator.StringToHash("die");
     #endregion
 
     #region 动画相关
     public Animator animator;
+    public override void AnimEvt_AttackDamage(int index)
+    {
+        base.AnimEvt_AttackDamage(index);
+        CreatDamageZone(damageZones[index]);
+    }
     public void AnimEvt_StopHit()
     {
         animator.SetBool(hit_l_id, false);
@@ -154,17 +227,19 @@ public class Enemy : Unit
     {
         canAttack = true;
     }
-    public void AnimEvt_AttackStart()
+    public void AnimEvt_AttackStart(int balance_level)
     {
         canAttack = false;
         canMove = false;
         animator.SetBool(is_attack_id, true);
+        curBalanceLevel = balance_level;
     }
     public void AnimEvt_AttackEnd()
     {
         canAttack = true;
         canMove = true;
         animator.SetBool(is_attack_id, false);
+        curBalanceLevel = constantBalanceLevel;
     }
 
     // 要替换Clip
@@ -209,6 +284,7 @@ public class Enemy : Unit
     #region AI相关 都在Fix中使用
     public CharacterController characterController;
     [Header("AI控制参数")]
+    public bool isAIWorking = true;
     public float runSpeed = 2;
     public float walkSpeed = 2.5f;
     public float strategyInterval = 3;
@@ -231,6 +307,10 @@ public class Enemy : Unit
     public int curStrategy;
     private void AIUpdate()
     {
+        if (!isAIWorking)
+        {
+            return;
+        }
         Vector3 _dis = player.transform.position - transform.position;
         _dis.y = 0;
         disToPlayer = _dis.magnitude;

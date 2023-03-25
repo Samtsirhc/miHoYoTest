@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnemyHpBar : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class EnemyHpBar : MonoBehaviour
     public RectTransform bgHpBar;
     public RectTransform realHpBar;
     public RectTransform fakeHpBar;
+    public Text name;
     // Start is called before the first frame update
     void Start()
     {
@@ -37,6 +39,8 @@ public class EnemyHpBar : MonoBehaviour
 
             realHpBar.sizeDelta = new Vector2(bg_sz.x * real_rate, bg_sz.y);
             fakeHpBar.sizeDelta = new Vector2(bg_sz.x * fake_rate, bg_sz.y);
+
+            name.text = e.name;
 
 
         }

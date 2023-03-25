@@ -5,7 +5,22 @@ using UnityEngine;
 public class Player : Unit
 {
     public List<GameObject> damageZones;
-    public float energy;
+    public float energy
+    {
+        get => _energy;
+        set
+        {
+            if (value >= 1000)
+            {
+                _energy = 1000;
+            }
+            else
+            {
+                _energy = value;
+            }
+        }
+    }
+    private float _energy;
     private PlayerController playerController => GetComponent<PlayerController>();
 
     #region Unity函数
@@ -44,7 +59,7 @@ public class Player : Unit
                 GravitationBreak();
                 return;
             }
-            if (value <= nuclearValue)
+            if (value < nuclearValue && value > nuclearValueLowerLimit)
             {
                 GravitationBreak();
                 return;
@@ -55,7 +70,7 @@ public class Player : Unit
     }
     private float _nuclearValueUpperLimit = 1000f;
 
-    public float nuclearValueLowerLimit = 0f;
+    public float nuclearValueLowerLimit = 300f;
 
     public int vectorCrystalNum
     {
@@ -73,6 +88,9 @@ public class Player : Unit
     #endregion
 
     #region 战斗相关
+    [Header("战斗数值设定")]
+    public float nVToLimit = 0.3f;
+    public float nVToEnergy = 0.3f;
     public override void Init()
     {
         base.Init();
@@ -80,12 +98,28 @@ public class Player : Unit
     public override void TakeDamage(Damage damage)
     {
         base.TakeDamage(damage);
+        if (playerController.isInvinciable)
+        {
+            (damage.sourceUnit as Enemy).ShowWeak();
+            Debug.Log("闪避了");
+            return;
+        }
+        if (canClash)
+        {
+            Clash();
+            (damage.sourceUnit as Enemy).HitReact(21);
+            (damage.sourceUnit as Enemy).fakeHp -= 50;
+            return;
+        }
+        if (playerController.isSuperArmor)
+        {
+            (damage.sourceUnit as Enemy).HitReact(11);
+            nuclearValue += damage.fakeDamage * 1.5f;
+            return;
+        }
         nuclearValue += damage.fakeDamage;
         nuclearValueUpperLimit -= damage.realDamage;
-        if (damage.unbalanceLevel - curBalanceLevel >= 1)
-        {
-            playerController.Hit_L();
-        }
+        playerController.Hit_L();
     }
 
     public void GravitationBreak()  // 引力破碎，恢复上限，清空核力，晶体数量减少
@@ -109,20 +143,22 @@ public class Player : Unit
     }
     public void ConsumeNuclearValue()
     {
-        nuclearValueUpperLimit += nuclearValue * 0.1f;
+        nuclearValueUpperLimit += nuclearValue * nVToLimit;
         if (nuclearValueUpperLimit >= 1000)
         {
             nuclearValueUpperLimit = 1000;
         }
-        energy += nuclearValue * 0.35f;
+        energy += nuclearValue * nVToEnergy;
         nuclearValue = 0;
     }
     public int consumeNuclearTime = 0;
     public float nuclearValueToUse = 0f;
 
+    public bool canClash = false;
     public void Clash()
     {
         playerController.Clash();
+        nuclearValue += 100;
     }
     #endregion
 
@@ -139,6 +175,22 @@ public class Player : Unit
         {
             CreatDamageZone(damageZones[index]);
         }
+        if (index != 3)
+        {
+            playerController.impulseSource_01.GenerateImpulse();
+        }
+        else
+        {
+            playerController.impulseSource_02.GenerateImpulse();
+        }
+    }
+    public void AnimEvt_ClashOpen()
+    {
+        canClash = true;
+    }
+    public void AnimEvt_ClashClose()
+    {
+        canClash = false;
     }
     #endregion
 
