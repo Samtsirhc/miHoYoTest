@@ -59,6 +59,13 @@ public class Enemy : Unit
     private void Start()
     {
         Init();
+        StartCoroutine(sss());
+    }
+    IEnumerator sss()
+    {
+        AddAttackGoal(clips[Random.Range(0, clips.Count)].name, 2.5f, 30);
+        yield return new WaitForSeconds(6);
+        StartCoroutine(sss());
     }
     private void FixedUpdate()
     {
@@ -247,32 +254,9 @@ public class Enemy : Unit
     public string clip_name = "Die";
 
     [EditorButton]
-    public void Attack(AnimationClip clip)
+    public void Attack(string clip_name)
     {
-        AnimatorStateInfo[] layerInfo = new AnimatorStateInfo[animator.layerCount];
-        for (int i = 0; i < animator.layerCount; i++)
-        {
-            layerInfo[i] = animator.GetCurrentAnimatorStateInfo(i);
-        }
-        try
-        {
-            AnimatorOverrideController overrideController = new AnimatorOverrideController();
-            overrideController.runtimeAnimatorController = animator.runtimeAnimatorController;
-            overrideController[clip_name] = clip;
-
-            animator.runtimeAnimatorController = overrideController;
-            animator.Update(0.0f);
-        }
-        catch (System.Exception)
-        {
-        }
-        animator.SetTrigger(attack_id);
-        for (int i = 0; i < animator.layerCount; i++)
-        {
-            animator.Play(layerInfo[i].fullPathHash, i, layerInfo[i].normalizedTime);
-        }
-
-        clip_name = clip.name;
+        animator.Play(clip_name);
     }
     #endregion
 
@@ -358,8 +342,6 @@ public class Enemy : Unit
             return;
         }
         attackBrainTimer = attackBrainInterval;
-
-        AddAttackGoal("三连击", 2.5f, 5);
     }
     public List<AttackGoal> attackGoals = new List<AttackGoal>();
     private void AIAttack()
@@ -370,7 +352,7 @@ public class Enemy : Unit
             {
                 if (disToPlayer <= item.attackDis)
                 {
-                    Attack(item.clip);
+                    Attack(item.clip.name);
                     attackGoals.Remove(item);
                     break;
                 }

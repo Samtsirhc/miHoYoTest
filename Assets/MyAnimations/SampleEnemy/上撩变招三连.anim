@@ -2231,7 +2231,7 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 4.7833333
+  - time: 5
     functionName: AnimEvt_AttackEnd
     data: 
     objectReferenceParameter: {fileID: 0}
