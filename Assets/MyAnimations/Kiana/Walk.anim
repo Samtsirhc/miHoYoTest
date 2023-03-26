@@ -115544,7 +115544,7 @@ AnimationClip:
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 0
-    functionName: AnimEvt_ResetEveryThing
+    functionName: AnimEvt_ResetForMove
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

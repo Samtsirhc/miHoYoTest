@@ -595,7 +595,41 @@ public class PlayerController : Singleton<PlayerController>
     #endregion
 
     #region 动画事件
-
+    private void AnimEvt_ResetForMove()
+    {
+        AnimEvt_MoveOpen();
+        AnimEvt_EvadeOpen();
+        AnimEvt_AttackOpen();
+        player.AnimEvt_ClashClose();
+        AnimEvt_InvinciableClose();
+        AnimEvt_SuperArmorClose();
+        AnimEvt_SetCombo(0);
+    }
+    private void AnimEvt_ResetForAttack()
+    {
+        AnimEvt_MoveClose();
+        AnimEvt_AttackClose();
+        AnimEvt_EvadeClose();
+        AnimEvt_InvinciableClose();
+        AnimEvt_SuperArmorClose();
+    }
+    private void AnimEvt_ResetForEvade()
+    {
+        AnimEvt_MoveClose();
+        AnimEvt_AttackClose();
+        AnimEvt_EvadeClose();
+        AnimEvt_InvinciableClose();
+        AnimEvt_SuperArmorClose();
+        AnimEvt_SetCombo(0);
+    }
+    private void AnimEvt_ResetForHit()
+    {
+        AnimEvt_MoveClose();
+        AnimEvt_AttackClose();
+        AnimEvt_EvadeClose();
+        AnimEvt_InvinciableClose();
+        AnimEvt_SuperArmorClose();
+    }
     private void AnimEvt_MoveClose()
     {
         Debug.Log("关闭移动");
@@ -603,8 +637,15 @@ public class PlayerController : Singleton<PlayerController>
     }
     private void AnimEvt_MoveOpen()
     {
-        Debug.Log("打开移动");
-        canMove = true;
+        if (animator.IsInTransition(0))
+        {
+
+        }
+        else
+        {
+            Debug.Log("打开移动");
+            canMove = true;
+        }
     }
     private void AnimEvt_SetCombo(int combo)
     {

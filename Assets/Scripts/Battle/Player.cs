@@ -109,6 +109,7 @@ public class Player : Unit
             Clash();
             (damage.sourceUnit as Enemy).HitReact(21);
             (damage.sourceUnit as Enemy).fakeHp -= 50;
+            nuclearValue += damage.fakeDamage * 2;
             return;
         }
         if (playerController.isSuperArmor)

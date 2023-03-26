@@ -99,6 +99,10 @@ public class Enemy : Unit
         {
             fakeHp += recoverRate * Time.fixedDeltaTime;
         }
+        else
+        {
+            fakeHp += recoverRate * Time.fixedDeltaTime * 0.25f;
+        }
     }
 
     public override void TakeDamage(Damage damage)
@@ -271,10 +275,11 @@ public class Enemy : Unit
     public bool isAIWorking = true;
     public float runSpeed = 2;
     public float walkSpeed = 2.5f;
-    public float strategyInterval = 3;
+    public float strategyInterval = 1;
     public float attackBrainInterval = 3;
     private float moveSpeed;
     private Vector3 moveDirection;
+    private Vector3 faceDirection;
 
     private void Move()
     {
@@ -283,7 +288,7 @@ public class Enemy : Unit
         {
             moveSpeed = 0;
         }
-        TrunSmooth(moveDirection.normalized);
+        TrunSmooth(faceDirection.normalized);
         characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
     }
     [Header("AI显示参数，拒绝修改")]
@@ -308,16 +313,76 @@ public class Enemy : Unit
     private float strategyTimer;
     private void AIStrategy()
     {
+        // 0 是进攻 1 是对峙 2 是靠近 3 是远离
+        // 打破策略的条件
+        if (curStrategy == 2 && disToPlayer <= 5.5)
+        {
+            // 完成靠近任务
+            strategyTimer = -1;
+        }
+        if (curStrategy == 3 && disToPlayer >= 7.5)
+        {
+            // 完成远离任务
+            strategyTimer = -1;
+        }
+        // 重置计时器
         strategyTimer -= Time.fixedDeltaTime;
         if (strategyTimer >= 0)
         {
             return;
         }
         strategyTimer = strategyInterval;
-        // 0 是进攻 1 是对峙
+
+
+        if (disToPlayer >= 10)
+        {
+            // 太远了先靠近
+            curStrategy = 2;
+        }
+        else if(disToPlayer >= 6)
+        {
+            if (curStrategy == 1)
+            {
+                // 已经是对峙，有概率切攻击
+                var dice = Random.Range(0, 100);
+                if (dice >= 50)
+                {
+                    curStrategy = 0;
+                }           
+            }
+            else
+            {
+                // 不是对峙先对峙
+                curStrategy = 1;
+            }
+        }
+        else if (disToPlayer >= 2.5)
+        {
+            if (curStrategy == 0)
+            {
+                // 已经是攻击，有概率切远离
+                var dice = Random.Range(0, 100);
+                if (dice >= 20)
+                {
+                    curStrategy = 3;
+                }
+            }
+        }
+        else
+        {
+            float dice_1 = 1 - (disToPlayer / 6);
+            int dice_2 = (int)(dice_1 * 100);
+            if (Random.Range(1,100) < dice_2)
+            {
+                curStrategy = 3;
+            }
+        }
     }
     private void AIMovement()
     {
+        faceDirection = player.transform.position - transform.position;
+        faceDirection.y = 0;
+        // 0 是进攻 1 是对峙 2 是靠近 3 是远离
         if (curStrategy == 0)
         {
             moveDirection = player.transform.position - transform.position;
@@ -329,6 +394,18 @@ public class Enemy : Unit
             moveDirection = player.transform.position - transform.position;
             moveDirection.y = 0;
             moveDirection = Vector3.Cross(moveDirection, new Vector3(0, 1, 0));
+            moveSpeed = walkSpeed;
+        }
+        if (curStrategy == 2)
+        {
+            moveDirection = player.transform.position - transform.position;
+            moveDirection.y = 0;
+            moveSpeed = walkSpeed;
+        }
+        if (curStrategy == 3)
+        {
+            moveDirection = - player.transform.position + transform.position;
+            moveDirection.y = 0;
             moveSpeed = walkSpeed;
         }
     }
