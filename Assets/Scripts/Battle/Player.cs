@@ -70,7 +70,7 @@ public class Player : Unit
     }
     private float _nuclearValueUpperLimit = 1000f;
 
-    public float nuclearValueLowerLimit = 300f;
+    public float nuclearValueLowerLimit = 0f;
 
     public int vectorCrystalNum
     {

@@ -47,7 +47,7 @@ public class PlayerController : Singleton<PlayerController>
     private bool canEvade = true;
     private bool canSkill = true;
     private bool canBurst = false;
-    private bool canSpAttack => player.energy > -1f;
+    private bool canSpAttack => player.energy > 999f;
     public bool isSkillCd = true;
     public bool isInvinciable = false;
     public bool isSuperArmor = false;
@@ -407,7 +407,8 @@ public class PlayerController : Singleton<PlayerController>
             animator.SetFloat(move_speed_id, moveSpeed);
             if (canMove)
             {
-                if (lockTarget != null)
+                if (false)
+                    //if (lockTarget != null)
                 {
                     if (Input.GetKey(KeyCode.LeftShift))
                     {
@@ -609,9 +610,9 @@ public class PlayerController : Singleton<PlayerController>
     {
         AnimEvt_MoveClose();
         AnimEvt_AttackClose();
-        AnimEvt_EvadeClose();
         AnimEvt_InvinciableClose();
         AnimEvt_SuperArmorClose();
+        player.AnimEvt_ClashClose();
     }
     private void AnimEvt_ResetForEvade()
     {
@@ -620,6 +621,7 @@ public class PlayerController : Singleton<PlayerController>
         AnimEvt_EvadeClose();
         AnimEvt_InvinciableClose();
         AnimEvt_SuperArmorClose();
+        player.AnimEvt_ClashClose();
         AnimEvt_SetCombo(0);
     }
     private void AnimEvt_ResetForHit()
@@ -629,6 +631,8 @@ public class PlayerController : Singleton<PlayerController>
         AnimEvt_EvadeClose();
         AnimEvt_InvinciableClose();
         AnimEvt_SuperArmorClose();
+        player.AnimEvt_ClashClose();
+        AnimEvt_SetCombo(0);
     }
     private void AnimEvt_MoveClose()
     {
@@ -637,15 +641,8 @@ public class PlayerController : Singleton<PlayerController>
     }
     private void AnimEvt_MoveOpen()
     {
-        if (animator.IsInTransition(0))
-        {
-
-        }
-        else
-        {
-            Debug.Log("打开移动");
-            canMove = true;
-        }
+        Debug.Log("打开移动");
+        canMove = true;
     }
     private void AnimEvt_SetCombo(int combo)
     {
