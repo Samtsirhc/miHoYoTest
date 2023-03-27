@@ -36,7 +36,9 @@ public class Unit :MonoBehaviour
     {
         curBalanceLevel = constantBalanceLevel;
     }
-    public virtual void Die() { }
+    public virtual void Die() 
+    { 
+    }
     #endregion
 
     #region 动画事件

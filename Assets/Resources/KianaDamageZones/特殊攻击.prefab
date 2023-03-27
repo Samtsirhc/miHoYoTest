@@ -27,6 +27,10 @@ PrefabInstance:
       propertyPath: basicFakeDamage
       value: 200
       objectReference: {fileID: 0}
+    - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
+      propertyPath: basicRealDamage
+      value: 200
+      objectReference: {fileID: 0}
     - target: {fileID: 5366875807975188621, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: m_RootOrder
       value: 0

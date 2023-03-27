@@ -40,7 +40,7 @@ public class EnemyHpBar : MonoBehaviour
             realHpBar.sizeDelta = new Vector2(bg_sz.x * real_rate, bg_sz.y);
             fakeHpBar.sizeDelta = new Vector2(bg_sz.x * fake_rate, bg_sz.y);
 
-            name.text = e.name;
+            name.text = e.unit_name;
 
 
         }

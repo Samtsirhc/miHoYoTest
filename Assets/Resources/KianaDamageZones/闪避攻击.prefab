@@ -25,7 +25,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: basicFakeDamage
-      value: 30
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 5065753769187970048, guid: ec24172348f9a7840b9b10956efd035f, type: 3}
       propertyPath: getNuclearValue

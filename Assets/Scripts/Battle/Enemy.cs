@@ -5,7 +5,7 @@ using UnityEngine;
 public class Enemy : Unit
 {
     #region  属性 真假血量 血量恢复
-    public string name = "示例敌人";
+    public string unit_name = "示例敌人";
     [Header("战斗相关")]
     public float maxHp = 1000f;
     public float realHp
@@ -92,6 +92,11 @@ public class Enemy : Unit
         realHp = maxHp;
         fakeHp = maxHp;
     }
+    public override void Die()
+    {
+        base.Die();
+        animator.SetTrigger("die");
+    }
     public void RecoverFakeHp() // 在fixed update中使用
     {
         recoverTimer -= Time.fixedDeltaTime;
@@ -109,6 +114,8 @@ public class Enemy : Unit
     {
         base.TakeDamage(damage);
         recoverTimer = startRecoverTime;
+
+        AudioManager.Instance.PlayAudio($"主角打击{Random.Range(1, 6)}");
 
         float fake_dmg;
         fake_dmg = damage.fakeDamage;
@@ -216,6 +223,10 @@ public class Enemy : Unit
     {
         base.AnimEvt_AttackDamage(index);
         CreatDamageZone(damageZones[index]);
+    }
+    public void AnimEvt_Die()
+    {
+        Destroy(gameObject);
     }
     public void AnimEvt_StopHit()
     {

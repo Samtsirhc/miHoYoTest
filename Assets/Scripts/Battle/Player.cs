@@ -47,6 +47,14 @@ public class Player : Unit
             return;
         }
     }
+
+    internal void Refresh()
+    {
+        nuclearValueUpperLimit = 1000;
+        nuclearValue = 0;
+        vectorCrystalNum = 3;
+    }
+
     private float _nuclearValue = 0f;
 
     public float nuclearValueUpperLimit
@@ -109,15 +117,18 @@ public class Player : Unit
             Clash();
             (damage.sourceUnit as Enemy).HitReact(21);
             (damage.sourceUnit as Enemy).fakeHp -= 50;
-            nuclearValue += damage.fakeDamage * 2;
+            nuclearValue += damage.nuclearValue * 3;
+            AudioManager.Instance.PlayAudio("交锋");
             return;
         }
         if (playerController.isSuperArmor)
         {
             (damage.sourceUnit as Enemy).HitReact(11);
             nuclearValue += damage.fakeDamage * 1.5f;
+            AudioManager.Instance.PlayAudio($"挡住{Random.Range(1, 3)}");
             return;
         }
+        AudioManager.Instance.PlayAudio($"主角受击{Random.Range(1, 3)}");
         nuclearValue += damage.fakeDamage;
         nuclearValueUpperLimit -= damage.realDamage;
         playerController.Hit_L();

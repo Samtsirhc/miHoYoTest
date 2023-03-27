@@ -218,6 +218,11 @@ public class PlayerController : Singleton<PlayerController>
 
     void SpAttack()
     {
+        if (Input.GetKeyUp(KeyCode.Q))
+        {
+            animator.SetBool(sp_attack_id, false);
+            StopCoroutine("AutoEndSpAttack");
+        }
         if (!canSpAttack)
         {
             return;
@@ -229,11 +234,7 @@ public class PlayerController : Singleton<PlayerController>
             player.energy = 0;
             StartCoroutine("AutoEndSpAttack");
         }
-        if (Input.GetKeyUp(KeyCode.Q))
-        {
-            animator.SetBool(sp_attack_id, false);
-            StopCoroutine("AutoEndSpAttack");
-        }
+
     }
     public GameObject gravitationField;
     public Collider gColl
@@ -491,7 +492,7 @@ public class PlayerController : Singleton<PlayerController>
         if (lfAngle > 360f) lfAngle -= 360f;
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
-    private void Lock()
+    public void Lock()
     {
         if (Input.GetMouseButtonDown(2))
         {
@@ -519,6 +520,14 @@ public class PlayerController : Singleton<PlayerController>
                 moveSpeed = 2;
             }
         }
+    }
+    public void ReSetLock()
+    {
+        lockTarget = null;
+        virtualCamera_01.LookAt = null;
+        virtualCamera_01.gameObject.SetActive(true);
+        virtualCamera_02.LookAt = null;
+        virtualCamera_02.gameObject.SetActive(false);
     }
     #endregion
 
@@ -596,6 +605,18 @@ public class PlayerController : Singleton<PlayerController>
     #endregion
 
     #region 动画事件
+    private void AnimEvt_PlaySound(string sound_name)
+    {
+        if (sound_name == "人声")
+        {
+            int dice = Random.Range(1, 7);
+            AudioManager.Instance.PlayAudio($"{sound_name}_{dice}");
+        }
+        else
+        {
+            AudioManager.Instance.PlayAudio(sound_name);
+        }
+    }
     private void AnimEvt_ResetForMove()
     {
         AnimEvt_MoveOpen();

@@ -94,10 +94,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   constantBalanceLevel: 1
   curBalanceLevel: 1
-  name: "\u793A\u4F8B\u654C\u4EBA"
+  unit_name: "\u793A\u4F8B\u654C\u4EBA"
   maxHp: 1000
   fakeToRealRate: 0.5
-  startRecoverTime: 10
+  startRecoverTime: 5
   recoverRate: 30
   damageZones:
   - {fileID: 6216784043375910280, guid: a21802d5eda93c44c89106adb75d33d7, type: 3}
@@ -107,13 +107,19 @@ MonoBehaviour:
   animSpeed: 1
   animator: {fileID: 938249949283080444}
   clips:
-  - {fileID: 7400000, guid: a54f33a3be163a84dbe8e405a8bf7243, type: 2}
+  - {fileID: 7400000, guid: 8743ddbfa7fdba341ae7fc13b0e7b409, type: 2}
+  - {fileID: 7400000, guid: 18094008bbb2d6b46bcdeaa1ccc51bca, type: 2}
+  - {fileID: 7400000, guid: 85a24c3aa59e5524482b7037ab48a1bd, type: 2}
+  - {fileID: 7400000, guid: b00a17911bc80244ebcffc9e9225c0f0, type: 2}
+  - {fileID: 7400000, guid: 3af8ab0f7dd9fb6498867abf6a741679, type: 2}
+  - {fileID: 7400000, guid: 6c3f54ea3381bf04daf58e2c9fbcbdfa, type: 2}
+  - {fileID: 7400000, guid: a9338c17acb0d5b42b23bafddacc0ac9, type: 2}
   clip_name: Empty
   characterController: {fileID: 938249949283080446}
   isAIWorking: 1
-  runSpeed: 0.5
-  walkSpeed: 2.5
-  strategyInterval: 3
+  runSpeed: 0.7
+  walkSpeed: 0.4
+  strategyInterval: 2
   attackBrainInterval: 3
   disToPlayer: 0
   curStrategy: 0
@@ -512,7 +518,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1770455091027329520}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.53, z: 1.46}
+  m_LocalPosition: {x: 0, y: 2.842, z: 0.862}
   m_LocalScale: {x: 0.31, y: 0.31, z: 0.31}
   m_ConstrainProportionsScale: 1
   m_Children: []
